@@ -17,7 +17,24 @@ import pandas as pd
 import cv2
 
 
-def image_resize_aspectratio(arImage: np.array, nMinDim:int = 256) -> np.array:
+"""
+Utilities for extraction of frames from a video (or videos);
+Plus manipulation of frames.
+
+@references: https://github.com/FrederikSchorr/sign-language
+"""
+
+def image_resize_aspectratio(arImage, nMinDim = 256):
+    """Resize aspect ratio of image.
+    Rescale height to 256.
+
+    Keyword arguments:
+    arImage -- np.array
+    nMinDim -- Minimum Dimension (default 256)
+
+    returns np.array of floats
+    """
+    if (len(arImage.shape) < 2 ): raise ValueError("Image doesnot exist")
     nHeigth, nWidth, _ = arImage.shape
 
     if nWidth >= nHeigth:
@@ -32,28 +49,96 @@ def image_resize_aspectratio(arImage: np.array, nMinDim:int = 256) -> np.array:
     return arImage
 
 
-def images_resize_aspectratio(arImages: np.array, nMinDim:int = 256) -> np.array:
+def images_resize_aspectratio(arImages, nMinDim = 256):
+    """Resize aspect ratio of images.
+
+    Keyword arguments:
+    arImages -- List of np.array
+    nMinDim -- Minimum Dimension (default 256)
+
+    returns np.array of floats
+    """
     nImages, _, _, _ = arImages.shape
     liImages = []
     for i in range(nImages):
         arImage = image_resize_aspectratio(arImages[i, ...])
         liImages.append(arImage)
-    return np.array(liImages)
-    
 
-def video2frames(sVideoPath:str, nResizeMinDim:int) -> np.array:
-    """ Read video file with OpenCV and return array of frames
+    return np.array(liImages)
+
+
+def token_to_index(labelsPath):
+    """Maps each word token to index and the reverse 
+    for decoding predictions back to words;
+    as well as retrieves the number of unique char tokens.
+
+    Keyword arguments:
+    labelsPath -- (str) path to training target text in csv
+
+    return number of unique characters, word to index, index to words
+    """
+    df = pd.read_csv(labelsPath)
+    samples = df['translation'].values.tolist()
+
+    target_samples = []
+    st = set()
+    sentence_len = 0
+    for text in samples:
+      # add "\t" and "\n" to depict start and end of sentence respectively
+      text = "\t"+text+"\n"
+      if len(text) > sentence_len: sentence_len = len(text)
+      target_samples.append(text)
+      st = st.union(set(text)) 
+      
+      num_chars = len(st)
+
+      # one-hot encode by character level
+      tokenizer = Tokenizer(num_words=num_chars, char_level=True)
+      tokenizer.fit_on_texts(target_samples)
+
+    return sentence_len, num_chars, tokenizer.index_word, tokenizer.word_index
+
+def npyLoad(sPath):
+    """Load extracted features .npz data from sPath to train LSTM
+
+    sPath -- path to extracted features dir
+    """
+    
+    # load all npz files
+    dfVideos = pd.DataFrame(sorted(glob.glob(sPath + "/*.npz")), columns=["sDataPath"])
+
+    xr = [] 
+    yr = []
+    for path in dfVideos.sDataPath:
+      data = np.load(path)
+      x, y = data["x"], data["y"]
+      xr.append(x)
+      yr.append(y)
+
+      xArr = np.array(xr, dtype="float32")
+      yArr = np.array(yr, dtype="int32")
+
+    return xArr, yArr
+
+def video2frames(sVideoPath, nResizeMinDim):
+    """Read video file with OpenCV and return array of frames
     The frame rate depends on the video (and cannot be set)
 
     if nMinDim != None: Frames are resized preserving aspect ratio 
-        so that the smallest dimension is eg 256 pixels, with bilinear interpolation
+    so that the smallest dimension is eg 256 pixels, with bilinear interpolation
+
+    Keyword arguments:
+    sVideoPath -- path to video file
+    nMinDim -- minimum dimension image must have
+
+    returns np.array of floats.
     """
     
     # Create a VideoCapture object and read from input file
     oVideo = cv2.VideoCapture(sVideoPath)
     if (oVideo.isOpened() == False): raise ValueError("Error opening video file")
 
-    liFrames = []
+    lstOfFrames = []
 
     # Read until video is completed
     while(True):
@@ -64,24 +149,37 @@ def video2frames(sVideoPath:str, nResizeMinDim:int) -> np.array:
         if nResizeMinDim != None:
             # resize image
             arFrameResized = image_resize_aspectratio(arFrame, nResizeMinDim)
-
-		# Save the resulting frame to list
-        liFrames.append(arFrameResized)
+        
+		    # Save the resulting frame to list
+        lstOfFrames.append(arFrameResized)
    
-    return np.array(liFrames)
+    return np.array(lstOfFrames, dtype=np.float32)
 
 
-def frames2files(arFrames:np.array, sTargetDir:str):
-    """ Write array of frames to jpg files
-    Input: arFrames = (number of frames, height, width, depth)
+def frames2files(arFrames, sTargetDir):
+    """Write array of frames to jpg files.
+
+    Keyword arguments:
+    arFrames -- np.array of shape: (number of frames, height, width, depth)
+    sTargetDir -- dir to hold jpg files
+
+    returns None
     """
     os.makedirs(sTargetDir, exist_ok=True)
     for nFrame in range(arFrames.shape[0]):
         cv2.imwrite(sTargetDir + "/frame%04d.jpg" % nFrame, arFrames[nFrame, :, :, :])
+
     return
 
 
-def files2frames(sPath:str) -> np.array:
+def files2frames(sPath):
+    """Read jpg files to array of frames.
+
+    Keyword arguments:
+    sPath -- dir path to image files
+
+    returns None
+    """
     # important to sort image files upfront
     liFiles = sorted(glob.glob(sPath + "/*.jpg"))
     if len(liFiles) == 0: raise ValueError("No frames found in " + sPath)
@@ -92,12 +190,18 @@ def files2frames(sPath:str) -> np.array:
         arFrame = cv2.imread(sFramePath)
         liFrames.append(arFrame)
 
-    return np.array(liFrames)
+    return np.array(liFrames, dtype = np.float32)
     
     
-def frames_downsample(arFrames:np.array, nFramesTarget:int) -> np.array:
-    """ Adjust number of frames (eg 123) to nFramesTarget (eg 79)
+def frames_downsample(arFrames, nFramesTarget):
+    """Adjust number of frames (eg 123) to nFramesTarget (eg 79)
     works also if originally less frames then nFramesTarget
+
+    Keyword arguments:
+    arFrames -- number of frames
+    nFramesTarget -- target number of frames.
+
+    Returns np.array of floats
     """
 
     nSamples, _, _, _ = arFrames.shape
@@ -106,15 +210,21 @@ def frames_downsample(arFrames:np.array, nFramesTarget:int) -> np.array:
     # down/upsample the list of frames
     fraction = nSamples / nFramesTarget
     index = [int(fraction * i) for i in range(nFramesTarget)]
-    liTarget = [arFrames[i,:,:,:] for i in index]
-    #print("Change number of frames from %d to %d" % (nSamples, nFramesTarget))
-    #print(index)
+    lstOfTarget = [arFrames[i,:,:,:] for i in index]
+    print("Change number of frames from %d to %d" % (nSamples, nFramesTarget))
 
-    return np.array(liTarget)
+    return np.array(lstOfTarget)
     
     
-def image_crop(arFrame, nHeightTarget, nWidthTarget) -> np.array:
-    """ crop 1 frame to specified size, choose centered image
+def image_crop(arFrame, nHeightTarget, nWidthTarget):
+    """Crop a frame to specified size, choose centered image
+
+    Keyword arguments:
+    arFrame -- np.array representing image
+    nHeightTarget -- height of target image
+    nWidthTarget -- width of target image
+
+    Returns np.array of floats
     """
     nHeight, nWidth, _ = arFrame.shape
 
@@ -130,8 +240,15 @@ def image_crop(arFrame, nHeightTarget, nWidthTarget) -> np.array:
     return arFrame
 
 
-def images_crop(arFrames:np.array, nHeightTarget, nWidthTarget) -> np.array:
-    """ crop each frame in array to specified size, choose centered image
+def images_crop(arFrames, nHeightTarget, nWidthTarget):
+    """Crop array of frames to specified size, choose centered image
+
+    Keyword arguments:
+    arFrames -- np.array representing list of images, shape : (nSamples, nHeight, nWidth, nDepth)
+    nHeightTarget -- height of target image
+    nWidthTarget -- width of target image
+
+    Returns np.array of floats
     """
     nSamples, nHeight, nWidth, nDepth = arFrames.shape
 
@@ -147,27 +264,58 @@ def images_crop(arFrames:np.array, nHeightTarget, nWidthTarget) -> np.array:
     return arFrames
 
 
-def images_rescale(arFrames:np.array) -> np.array(float):
-    """ Rescale array of images (rgb 0-255) to [-1.0, 1.0]
+def images_rescale(arFrames):
+    """Rescale array of images (rgb 0-255) to [-1.0, 1.0]
+
+    Keyword arguments:
+    arFrames -- np.array of images
+
+    Returns np.array of floats
     """
+    ar_fFrames = arFrames /  127.5
+    ar_fFrames -= 1.0
 
-    ar_fFrames = arFrames / 127.5
-    ar_fFrames -= 1.
+    return arFrames
 
-    return ar_fFrames
+def save_to_npy(sFrames, sPath):
+    """Write np.array to file
+
+    """
+    dir_path = "/gdrive/My Drive/Capstone/frames_npy/"
+    # if file exist do not save
+    if not os.path.exists(dir_path): 
+        os.makedirs(dir_path, exist_ok = True)
+    
+    # create full path to save frames
+    sPath = os.path.join(dir_path, sPath)
+    if os.path.exists(sPath):
+        warnings.warn("\nFrames already saved to " + sPath) 
+        return
+
+    # save frames to npy
+    np.save(sPath, sFrames)
+    
+    return 
 
 
-def images_normalize(arFrames:np.array, nFrames:int, nHeight:int, nWidth:int, bRescale:bool = True) -> np.array(float):
+def images_normalize(arFrames, nTargetFrames, nHeight, nWidth, bRescale = True):
     """ Several image normalizations/preprocessing: 
         - downsample number of frames
         - crop to centered image
         - rescale rgb 0-255 value to [-1.0, 1.0] - only if bRescale == True
 
-    Returns array of floats
+    Keyword arguments:
+    arFrames -- np.array representing images
+    nTargetFrames -- target number of images after downsampling
+    nHeight -- height of target image after cropping
+    nWidth -- width of target image after cropping
+    nRescale -- indicates whether to rescale px values of images
+
+    Returns np.array of floats
     """
 
     # normalize the number of frames (assuming typically downsampling)
-    arFrames = frames_downsample(arFrames, nFrames)
+    arFrames = frames_downsample(arFrames, nTargetFrames)
 
     # crop to centered image
     arFrames = images_crop(arFrames, nHeight, nWidth)
@@ -181,72 +329,74 @@ def images_normalize(arFrames:np.array, nFrames:int, nHeight:int, nWidth:int, bR
     return arFrames
 
 
-def frames_show(arFrames:np.array, nWaitMilliSec:int = 100):
+def frames_show(arFrames, nWaitMilliSec = 100):
+    """Utility func to visualize images
+    
+    Keyword arguments:
+    arFrames -- np.array representing images
+    nWaitMillisec -- sec to wait before destroying image window
+    """
 
     nFrames, nHeight, nWidth, nDepth = arFrames.shape
     
     for i in range(nFrames):
-        cv2.imshow("Frame", arFrames[i, :, :, :])
+        cv2_imshow(arFrames[i, :, :, :])
         cv2.waitKey(nWaitMilliSec)
 
     return
 
 
-def video_length(sVideoPath:str) -> float:
+def video_length(sVideoPath):
+    """Uses mediainfo to obtain video info
+
+    Keyword arguments:
+    sVideoPath -- path to video file
+    """
     return int(check_output(["mediainfo", '--Inform=Video;%Duration%', sVideoPath]))/1000.0
 
 
-def videosDir2framesDir(sVideoDir:str, sFrameDir:str, nFramesNorm:int = None, 
-    nResizeMinDim:int = None, tuCropShape:tuple = None, nClasses:int = None):
-    """ Extract frames from videos 
-    
+def videosDir2framesDir(sVideoDir, pickleDirPath, nTargetFrames = None, 
+    nResizeMinDim = None, tuCropShape = None, bRescale=True):
+    """Extract frames from videos, and apply preprocessing
+
     Input video structure:
-    ... sVideoDir / train / class001 / videoname.avi
+    ... dataset / category (e.g train) / video.mpeg 
 
     Output:
-    ... sFrameDir / train / class001 / videoname / frames.jpg
+    ... sFrameDir / category (e.g train) / videoname / frames.jpg
+
+    Keyword arguments: 
+    sVideoDir -- dir of videos
+    nTargetFrames -- number of frames after downsampling
+    nResizeminDim -- minimum dimension aftre resizing
+    tuCropShape -- tuple (nHeight, nWidth) to crop image - we unpack with * operatorS4
+    
+    bRescale -- rescale rgb 0-255 value to [-1.0, 1.0] if True (default True)
+
+    preprocess and save preprocessed data to npy format in 
     """
 
     # do not (partially) overwrite existing frame directory
-    #if os.path.exists(sFrameDir): 
-    #    warnings.warn("Frame folder " + sFrameDir + " already exists, frame extraction stopped")
-    #    return 
+    if os.path.exists(pickleDirPath): 
+       warnings.warn("Frame folder " + pickleDirPath + " already exists, frame extraction stopped")
+       return 
+    
+    # initialize list 
+    sTragetFrames = []
 
-    # get videos. Assume sVideoDir / train / class / video.mp4
-    dfVideos = pd.DataFrame(sorted(glob.glob(sVideoDir + "/*/*/*.*")), columns=["sVideoPath"])
-    print("Located {} videos in {}, extracting to {} ..."\
-        .format(len(dfVideos), sVideoDir, sFrameDir))
+    # get videos. Assume .../dataset / category(e.g train) / video.mpg
+    dfVideos = pd.DataFrame(sorted(glob.glob(sVideoDir + "/*.mpg")), columns=["sVideoPath"])
+    print("Located {} videos in {}, extracting to npy format ...".format(len(dfVideos), sVideoDir))
     if len(dfVideos) == 0: raise ValueError("No videos found")
-
-    # eventually restrict to first nLabels
-    if nClasses != None:
-        dfVideos.loc[:,"sLabel"] = dfVideos.sVideoPath.apply(lambda s: s.split("/")[-2])
-        liClasses = sorted(dfVideos.sLabel.unique())[:nClasses]
-        dfVideos = dfVideos[dfVideos["sLabel"].isin(liClasses)]
-        print("Using only {} videos from first {} classes".format(len(dfVideos), nClasses))
 
     nCounter = 0
     # loop through all videos and extract frames
     for sVideoPath in dfVideos.sVideoPath:
 
-        # assemble target diretory (assumed directories see above)
-        li_sVideoPath = sVideoPath.split("/")
-        if len(li_sVideoPath) < 4: raise ValueError("Video path should have min 4 components: {}".format(str(li_sVideoPath)))
-        sVideoName = li_sVideoPath[-1].split(".")[0]
-        sTargetDir = sFrameDir + "/" + li_sVideoPath[-3] + "/" + li_sVideoPath[-2] + "/" + sVideoName
+        # assemble target directory (assumed directories see above)
+        lst_sVideoPath = sVideoPath.split("/")
+        sTargetDir = lst_sVideoPath[-2]
         
-        # check if frames already extracted
-        if nFramesNorm != None and os.path.exists(sTargetDir):
-            nFrames = len(glob.glob(sTargetDir + "/*.*"))
-            if nFrames == nFramesNorm: 
-                print("Video %5d already extracted to %s" % (nCounter, sTargetDir))
-                nCounter += 1
-                continue
-            else: 
-                print("Video %5d: Directory with %d instead of %d frames detected" % (nCounter, nFrames, nFramesNorm))
-        
-        # create target directory
-        os.makedirs(sTargetDir, exist_ok = True)
 
         # slice videos into frames with OpenCV
         arFrames = video2frames(sVideoPath, nResizeMinDim)
@@ -256,55 +406,21 @@ def videosDir2framesDir(sVideoDir:str, sFrameDir:str, nFramesNorm:int = None,
         nFrames = len(arFrames)
         fFPS = nFrames / fVideoSec   
 
-        # downsample
-        if nFramesNorm != None: 
-            arFrames = frames_downsample(arFrames, nFramesNorm)
-
-        # crop images
-        if tuCropShape != None:
-            arFrames = images_crop(arFrames, *tuCropShape)
+        # preprocess images
+        arFrames = images_normalize(arFrames, nTargetFrames, *tuCropShape, bRescale )
         
-        # write frames to .jpg files
-        frames2files(arFrames, sTargetDir)         
+        # append frames to np.array
+        sTragetFrames.append(arFrames)
+
 
         print("Video %5d | %5.1f sec | %d frames | %4.1f fps | saved %s in %s" % (nCounter, fVideoSec, nFrames, fFPS, str(arFrames.shape), sTargetDir))
-        nCounter += 1      
+        nCounter += 1
 
-    return
-
-
-def unittest(sVideoDir, nSamples = 100):
-    print("\nAnalyze video durations and fps from %s ..." % (sVideoDir))
-    print(os.getcwd())
-
-    liVideos = glob.glob(sVideoDir + "/*/*.mp4") + glob.glob(sVideoDir + "/*/*.avi")
+    sTragetFrames = np.array(sTragetFrames, dtype="float32")
     
-    if len(liVideos) == 0: raise ValueError("No videos detected")
+    # save to binary file
+    print("saving frames to npy directory...")
+    save_to_npy(sTragetFrames, sTargetDir) 
+    print("Done")     
 
-    fVideoSec_sum, nFrames_sum = 0, 0
-    for i in range(nSamples):
-        sVideoPath = random.choice(liVideos)
-        #print("Video %s" % sVideoPath)
-
-        # read video
-        arFrames = video2frames(sVideoPath, 256)
-        nFrames = len(arFrames)
-
-        # determine length of video in sec and deduce frame rate
-        fVideoSec = video_length(sVideoPath)
-        fFPS = nFrames / fVideoSec
-
-        fVideoSec_sum += fVideoSec
-        nFrames_sum += nFrames
-
-        print("%2d: Shape %s, duration %.1f sec, fps %.1f" % (i, str(arFrames.shape), fVideoSec, fFPS))
-
-    nCount = i+1
-    print("%d samples: Average video duration %.1f sec, fps %.1f" % (nSamples, fVideoSec_sum / nCount, nFrames_sum / fVideoSec_sum))
-
-    return
-
-if __name__ == '__main__':
-
-    unittest("data-set/01-ledasila/021/train", 100)
-    unittest("data-set/04-chalearn/010/train", 100)
+    return 
