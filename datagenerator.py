@@ -56,7 +56,8 @@ def data_generator(videos_path, labels_path, tuCropShape=(224, 224), max_sentenc
                             nResizeMinDim=nResizeMinDim, tuCropShape=tuCropShape,
                             bRescale=True)
 
-    # preprocess target labels 
+    # preprocess target labels
+    print("One-hot encoding labels...") 
     labels = textEncoder(labels_path, max_sentence_len, num_chars)
     
     return frames, labels

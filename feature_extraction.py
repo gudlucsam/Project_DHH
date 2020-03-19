@@ -41,7 +41,7 @@ def features_generator(videos_path, labels_path, keModel, max_sentence_len=53, \
     feature_frames = []
     # Predict - loop through all samples
     for i in range(nSamples):
-
+        print("extracting features for frames from video ", i)
         # get data point and target 
         xFrames = frames[i]
         # get normalized frames and predict feature

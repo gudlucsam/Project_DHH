@@ -72,10 +72,10 @@ if __name__ == "__main__":
     # train lstm model
     print("Training model....")
     model.fit([encoder_input_data, decoder_input_data], decoder_target_data,
-                batch_size=5, epochs=50, validation_split=0.2)
+                batch_size=5, epochs=2, validation_split=0.2)
 
     # save model
     print("Saving model....")
-    model.save('/saved_model/dnn.h5')
+    model.save('saved_model/dnn.h5')
 
     print("Done")

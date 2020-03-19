@@ -218,7 +218,7 @@ def frames_downsample(arFrames, nFramesTarget):
     fraction = nSamples / nFramesTarget
     index = [int(fraction * i) for i in range(nFramesTarget)]
     lstOfTarget = [arFrames[i,:,:,:] for i in index]
-    print("Change number of frames from %d to %d" % (nSamples, nFramesTarget))
+    # print("Change number of frames from %d to %d" % (nSamples, nFramesTarget))
 
     return np.array(lstOfTarget)
     
@@ -411,9 +411,9 @@ def process_videos(sVideoDir, nTargetFrames = None,
         arFrames = video2frames(sVideoPath, nResizeMinDim)
 
         # length and fps
-        fVideoSec = video_length(sVideoPath)
-        nFrames = len(arFrames)
-        fFPS = nFrames / fVideoSec   
+        # fVideoSec = video_length(sVideoPath)
+        # nFrames = len(arFrames)
+        # fFPS = nFrames / fVideoSec   
 
         # preprocess images
         arFrames = images_normalize(arFrames, nTargetFrames, *tuCropShape, bRescale)
@@ -422,8 +422,8 @@ def process_videos(sVideoDir, nTargetFrames = None,
         sTragetFrames.append(arFrames)
 
 
-        print("Video %5d | %5.1f sec | %d frames | %4.1f fps | processed %s frames" % (nCounter, fVideoSec, nFrames, fFPS, str(arFrames.shape)))
-        nCounter += 1
+        # print("Video %5d | %5.1f sec | %d frames | %4.1f fps | processed %s frames" % (nCounter, fVideoSec, nFrames, fFPS, str(arFrames.shape)))
+        # nCounter += 1
 
     sTragetFrames = np.array(sTragetFrames, dtype="float32")     
 
