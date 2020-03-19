@@ -11,7 +11,7 @@ import pandas as pd
 from datagenerator import data_generator
 
 
-def features_extractor(videos_path, labels_path, keModel, max_sentence_len=53, \
+def features_generator(videos_path, labels_path, keModel, max_sentence_len=53, \
                             num_chars=44, nTargetFrames=40, nResizeMinDim=256):
     """
     Used by  InceptionV3 or MobileNet architecture to extract features from video frames.

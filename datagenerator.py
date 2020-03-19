@@ -63,11 +63,11 @@ def data_generator(videos_path, labels_path, tuCropShape=(224, 224), max_sentenc
 
 
 
-if __name__ == "__main__":
-    videos_path = "dataset"
-    labels_path = "dataset_labels.csv"
-    frames, labels = data_generator(videos_path, labels_path, tuCropShape=(224, 224),
-                                    max_sentence_len=53, num_chars=44, nTargetFrames=40,
-                                    nResizeMinDim=256)
+# if __name__ == "__main__":
+#     videos_path = "dataset"
+#     labels_path = "dataset_labels.csv"
+#     frames, labels = data_generator(videos_path, labels_path, tuCropShape=(224, 224),
+#                                     max_sentence_len=53, num_chars=44, nTargetFrames=40,
+#                                     nResizeMinDim=256)
 
-    print(frames.shape, labels.shape)
+#     print(frames.shape, labels.shape)

@@ -36,31 +36,26 @@ class lstm_models():
     # inputs to encoder, decoder
     self.encoder_inputs = Input(shape=(None, self.nFeatureLength))
     self.decoder_inputs = Input(shape=(None, self.num_decoder_tokens))
-    
 
     # construct encoder, decoder and dense models for use in training and prediction models
     self.encoder = LSTM(self.latent_dim, recurrent_dropout=0.25, dropout=0.25, return_state=True)
-
-
     self.decoder_dense = Dense(self.num_decoder_tokens, activation='softmax')
-    
-    self.decoder_lstm = LSTM(self.latent_dim, recurrent_dropout=0.25,
-                              dropout=0.25, return_sequences=True, return_state=True)
-
+    self.decoder_lstm = LSTM(self.latent_dim, recurrent_dropout=0.25, dropout=0.25, return_sequences=True, 
+                              return_state=True)
 
   def encoder_decoder_model(self):
       # retrieve encoder states to use as initial states of decoder model
-      encoder_outputs, state_h, state_c = self.encoder(self.encoder_inputs)
+      _, state_h, state_c = self.encoder(self.encoder_inputs)
       self.encoder_states = [state_h, state_c]
 
       # retrieve outputs of decoder
       decoder_outputs, _, _ = self.decoder_lstm(self.decoder_inputs, initial_state=self.encoder_states)
 
-      # feed encoder outputs to dense layer for final prediction
-      decoder_outputs = self.decoder_dense(decoder_outputs)
+      # feed decoder outputs to dense layer for final prediction
+      outputs = self.decoder_dense(decoder_outputs)
 
       # construct encoder-decoder model using Keras functional API
-      model = Model(inputs=[self.encoder_inputs, self.decoder_inputs], outputs=decoder_outputs)
+      model = Model(inputs=[self.encoder_inputs, self.decoder_inputs], outputs=outputs)
 
       return model
 
@@ -79,11 +74,11 @@ class lstm_models():
       decoder_states = [state_h, state_c]
 
       # predict characters with dense layers by using decoder outputs as inputs
-      decoder_outputs = self.decoder_dense(decoder_outputs)
+      outputs = self.decoder_dense(decoder_outputs)
 
       # decoder model for prediction of characters
       dDecoderModel = Model([self.decoder_inputs] + decoder_states_inputs,
-                                              [decoder_outputs] + decoder_states)
+                                              [outputs] + decoder_states)
         
       return pEncoderModel, dDecoderModel
          
@@ -105,17 +100,14 @@ class lstm_models():
       stop_condition = False
       decoded_sentence = ''
       while not stop_condition:
-        output_tokens, h, c = dDecoderModel.predict(
-          [target_seq] + states_value)
+        output_tokens, h, c = dDecoderModel.predict([target_seq] + states_value)
           
-        # sample a token and add the corresponding character to the 
-        # decoded sequence
+        # sample a token and add the corresponding character to the decoded sequence
         sampled_token_index = np.argmax(output_tokens[0, -1, :])
         sampled_char = self.index_to_chars[sampled_token_index]
         decoded_sentence += sampled_char
           
-        # check for the exit condition: either hitting max length
-        # or predicting the 'stop' character
+        # check for the exit condition: either hitting max length or predicting the 'stop' character
         if (sampled_char == '\n' or len(decoded_sentence) > self.max_sentence_len):
           stop_condition = True
             
