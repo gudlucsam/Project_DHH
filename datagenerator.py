@@ -49,8 +49,7 @@ def textEncoder(labels_path, max_sentence_len, num_chars):
 
 
 def data_generator(videos_path, labels_path, tuCropShape=(224, 224), max_sentence_len=53, \
-                    num_chars=44, nTargetFrames=40, nResizeMinDim=256, \
-                    nChannels=3, nBatchSize=1, bShuffle = False):
+                    num_chars=44, nTargetFrames=40, nResizeMinDim=256):
     
     # preprocess video frames
     frames = process_videos(videos_path, nTargetFrames=nTargetFrames,
@@ -69,6 +68,6 @@ if __name__ == "__main__":
     labels_path = "dataset_labels.csv"
     frames, labels = data_generator(videos_path, labels_path, tuCropShape=(224, 224),
                                     max_sentence_len=53, num_chars=44, nTargetFrames=40,
-                                    nResizeMinDim=256, nChannels=3, nBatchSize=1, bShuffle = False)
-                                    
+                                    nResizeMinDim=256)
+
     print(frames.shape, labels.shape)

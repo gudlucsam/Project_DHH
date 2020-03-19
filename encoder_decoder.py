@@ -1,8 +1,16 @@
+import keras
+import numpy as np
+
+from keras.layers import Input, Dense, LSTM
+from keras.models import Model
+
+
+
 class lstm_models():
   """Builds an encoder decoder (LSTM) to predict sequence of text
           
         Keyword arguments:
-        nFramesNorm -- (int) number of frames in sequence
+        nFramesTarget -- (int) number of frames in sequence
         nFeatureLength -- (int) length of features extracted from CNN per frame ( 1024 or 2048)
         max_sentence_len -- (int) character length of longest target text
         unique_char_tokens -- (int) length of unique character tokens in target text
@@ -12,9 +20,9 @@ class lstm_models():
         """
 
   def __init__(self, index_to_chars, chars_to_index, 
-               nFramesNorm, nFeatureLength, max_sentence_len, unique_char_tokens, latent_dim=256):
+               nFramesTarget, nFeatureLength, max_sentence_len, unique_char_tokens, latent_dim=256):
     
-    self.nFramesNorm = nFramesNorm
+    self.nFramesTarget = nFramesTarget
     self.nFeatureLength = nFeatureLength
     self.max_sentence_len = max_sentence_len
     self.num_decoder_tokens = unique_char_tokens
@@ -26,16 +34,18 @@ class lstm_models():
     self.latent_dim = latent_dim
 
     # inputs to encoder, decoder
-    self.decoder_inputs = tf.keras.layers.Input(shape=(None, self.num_decoder_tokens))
-    self.encoder_inputs = tf.keras.layers.Input(shape=(None, self.nFeatureLength))
+    self.encoder_inputs = Input(shape=(None, self.nFeatureLength))
+    self.decoder_inputs = Input(shape=(None, self.num_decoder_tokens))
+    
 
     # construct encoder, decoder and dense models for use in training and prediction models
-    self.encoder = tf.keras.layers.LSTM(self.latent_dim, recurrent_dropout=0.25, dropout=0.25, return_state=True)
+    self.encoder = LSTM(self.latent_dim, recurrent_dropout=0.25, dropout=0.25, return_state=True)
 
 
-    self.decoder_dense = tf.keras.layers.Dense(self.num_decoder_tokens, activation='softmax')
+    self.decoder_dense = Dense(self.num_decoder_tokens, activation='softmax')
     
-    self.decoder_lstm = tf.keras.layers.LSTM(self.latent_dim, recurrent_dropout=0.25, dropout=0.25, return_sequences=True, return_state=True)
+    self.decoder_lstm = LSTM(self.latent_dim, recurrent_dropout=0.25,
+                              dropout=0.25, return_sequences=True, return_state=True)
 
 
   def encoder_decoder_model(self):
@@ -50,29 +60,29 @@ class lstm_models():
       decoder_outputs = self.decoder_dense(decoder_outputs)
 
       # construct encoder-decoder model using Keras functional API
-      model = tf.keras.models.Model(inputs=[self.encoder_inputs, self.decoder_inputs], outputs=decoder_outputs)
+      model = Model(inputs=[self.encoder_inputs, self.decoder_inputs], outputs=decoder_outputs)
 
       return model
 
   def construct_prediction_model(self):
       # separate encoder model to encode input feature frames sequences 
-      pEncoderModel = tf.keras.models.Model(self.encoder_inputs, self.encoder_states)
+      pEncoderModel = Model(self.encoder_inputs, self.encoder_states)
 
       # specify decoder states input shape
-      decoder_state_input_h = tf.keras.layers.Input(shape=(self.latent_dim,))
-      decoder_state_input_c = tf.keras.layers.Input(shape=(self.latent_dim,))
+      decoder_state_input_h = Input(shape=(self.latent_dim,))
+      decoder_state_input_c = Input(shape=(self.latent_dim,))
       decoder_states_inputs = [decoder_state_input_h, decoder_state_input_c]
         
       #  construct separate decoder for prediction, and retrieve decoder states
-      decoder_outputs, state_h, state_c = self.decoder_lstm(
-        self.decoder_inputs, initial_state=decoder_states_inputs)
+      decoder_outputs, state_h, state_c = self.decoder_lstm(self.decoder_inputs,
+                                                              initial_state=decoder_states_inputs)
       decoder_states = [state_h, state_c]
 
       # predict characters with dense layers by using decoder outputs as inputs
       decoder_outputs = self.decoder_dense(decoder_outputs)
 
       # decoder model for prediction of characters
-      dDecoderModel = tf.keras.models.Model([self.decoder_inputs] + decoder_states_inputs,
+      dDecoderModel = Model([self.decoder_inputs] + decoder_states_inputs,
                                               [decoder_outputs] + decoder_states)
         
       return pEncoderModel, dDecoderModel

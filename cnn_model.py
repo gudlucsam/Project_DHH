@@ -1,6 +1,9 @@
+import keras
 
 
-
+from keras.applications.mobilenet import MobileNet
+from keras.applications.inception_v3 import InceptionV3
+from keras.models import Model
 
 
 
@@ -22,13 +25,13 @@ def features_2D_model(mName="mobilenet", input_shape=(224, 224, 3), output_shape
         print("Loading MobileNet for feature  extraction...")
 
         # load base model with top
-        keBaseModel = tf.keras.applications.mobilenet.MobileNet(
+        keBaseModel = MobileNet(
             weights="imagenet",
             input_shape = (224, 224, 3),
             include_top = True)
 
         # We'll extract features at the final pool layer
-        keModel = tf.keras.models.Model(
+        keModel = Model(
             inputs=keBaseModel.input,
             outputs=keBaseModel.layers[-6].output,
             name=mName + "_without_top_layer_v1") 
@@ -37,12 +40,12 @@ def features_2D_model(mName="mobilenet", input_shape=(224, 224, 3), output_shape
         print("Loading InceptionV3 for feature  extraction...")
 
         # load base model with top
-        keBaseModel = tf.keras.applications.inception_v3.InceptionV3(
+        keBaseModel = InceptionV3(
             weights='imagenet',
             include_top=True)
 
         # We'll extract features at the final pool layer
-        keModel = tf.keras.models.Model(
+        keModel = Model(
             inputs=keBaseModel.input,
             outputs=keBaseModel.layers[-2].output,
             name=mName + "_without_top_layer_v1") 
