@@ -10,6 +10,7 @@ import glob
 import warnings
 import random
 from subprocess import check_output
+from keras.preprocessing.text import Tokenizer
 
 import numpy as np
 import pandas as pd
@@ -25,7 +26,8 @@ Plus manipulation of frames.
 """
 
 def image_resize_aspectratio(arImage, nMinDim = 256):
-    """Resize aspect ratio of image.
+    """
+    Resize aspect ratio of image.
     Rescale height to 256.
 
     Keyword arguments:
@@ -50,7 +52,8 @@ def image_resize_aspectratio(arImage, nMinDim = 256):
 
 
 def images_resize_aspectratio(arImages, nMinDim = 256):
-    """Resize aspect ratio of images.
+    """
+    Resize aspect ratio of images.
 
     Keyword arguments:
     arImages -- List of np.array
@@ -68,7 +71,8 @@ def images_resize_aspectratio(arImages, nMinDim = 256):
 
 
 def token_to_index(labelsPath):
-    """Maps each word token to index and the reverse 
+    """
+    Maps each word token to index and the reverse 
     for decoding predictions back to words;
     as well as retrieves the number of unique char tokens.
 
@@ -89,17 +93,18 @@ def token_to_index(labelsPath):
       if len(text) > sentence_len: sentence_len = len(text)
       target_samples.append(text)
       st = st.union(set(text)) 
-      
-      num_chars = len(st)
-
-      # one-hot encode by character level
-      tokenizer = Tokenizer(num_words=num_chars, char_level=True)
-      tokenizer.fit_on_texts(target_samples)
+    
+    #total of unique characters
+    num_chars = len(st)
+    # one-hot encode by character level
+    tokenizer = Tokenizer(num_words=num_chars, char_level=True)
+    tokenizer.fit_on_texts(target_samples)
 
     return sentence_len, num_chars, tokenizer.index_word, tokenizer.word_index
 
 def npyLoad(sPath):
-    """Load extracted features .npz data from sPath to train LSTM
+    """
+    Load extracted features .npz data from sPath to train LSTM
 
     sPath -- path to extracted features dir
     """
@@ -121,10 +126,11 @@ def npyLoad(sPath):
     return xArr, yArr
 
 def video2frames(sVideoPath, nResizeMinDim):
-    """Read video file with OpenCV and return array of frames
+    """
+    Read video file with OpenCV and return array of frames
     The frame rate depends on the video (and cannot be set)
 
-    if nMinDim != None: Frames are resized preserving aspect ratio 
+    if nResizeMinDim != None: Frames are resized preserving aspect ratio 
     so that the smallest dimension is eg 256 pixels, with bilinear interpolation
 
     Keyword arguments:
@@ -150,15 +156,15 @@ def video2frames(sVideoPath, nResizeMinDim):
             # resize image
             arFrameResized = image_resize_aspectratio(arFrame, nResizeMinDim)
         
-		    # Save the resulting frame to list
+		# Save the resulting frame to list
         lstOfFrames.append(arFrameResized)
    
     return np.array(lstOfFrames, dtype=np.float32)
 
 
 def frames2files(arFrames, sTargetDir):
-    """Write array of frames to jpg files.
-
+    """
+    Write array of frames to jpg files.
     Keyword arguments:
     arFrames -- np.array of shape: (number of frames, height, width, depth)
     sTargetDir -- dir to hold jpg files
@@ -173,8 +179,8 @@ def frames2files(arFrames, sTargetDir):
 
 
 def files2frames(sPath):
-    """Read jpg files to array of frames.
-
+    """
+    Read jpg files to array of frames.
     Keyword arguments:
     sPath -- dir path to image files
 
@@ -194,7 +200,8 @@ def files2frames(sPath):
     
     
 def frames_downsample(arFrames, nFramesTarget):
-    """Adjust number of frames (eg 123) to nFramesTarget (eg 79)
+    """
+    Adjust number of frames (eg 123) to nFramesTarget (eg 79)
     works also if originally less frames then nFramesTarget
 
     Keyword arguments:
@@ -217,7 +224,8 @@ def frames_downsample(arFrames, nFramesTarget):
     
     
 def image_crop(arFrame, nHeightTarget, nWidthTarget):
-    """Crop a frame to specified size, choose centered image
+    """
+    Crop a frame to specified size, choose centered image
 
     Keyword arguments:
     arFrame -- np.array representing image
@@ -241,7 +249,8 @@ def image_crop(arFrame, nHeightTarget, nWidthTarget):
 
 
 def images_crop(arFrames, nHeightTarget, nWidthTarget):
-    """Crop array of frames to specified size, choose centered image
+    """
+    Crop array of frames to specified size, choose centered image
 
     Keyword arguments:
     arFrames -- np.array representing list of images, shape : (nSamples, nHeight, nWidth, nDepth)
@@ -265,7 +274,8 @@ def images_crop(arFrames, nHeightTarget, nWidthTarget):
 
 
 def images_rescale(arFrames):
-    """Rescale array of images (rgb 0-255) to [-1.0, 1.0]
+    """
+    Rescale array of images (rgb 0-255) to [-1.0, 1.0]
 
     Keyword arguments:
     arFrames -- np.array of images
@@ -278,7 +288,8 @@ def images_rescale(arFrames):
     return arFrames
 
 def save_to_npy(sFrames, sPath):
-    """Write np.array to file
+    """
+    Write np.array to file
 
     """
     dir_path = "/gdrive/My Drive/Capstone/frames_npy/"
@@ -316,10 +327,8 @@ def images_normalize(arFrames, nTargetFrames, nHeight, nWidth, bRescale = True):
 
     # normalize the number of frames (assuming typically downsampling)
     arFrames = frames_downsample(arFrames, nTargetFrames)
-
     # crop to centered image
     arFrames = images_crop(arFrames, nHeight, nWidth)
-
     if bRescale:
         # normalize to [-1.0, 1.0]
         arFrames = images_rescale(arFrames)
@@ -330,7 +339,8 @@ def images_normalize(arFrames, nTargetFrames, nHeight, nWidth, bRescale = True):
 
 
 def frames_show(arFrames, nWaitMilliSec = 100):
-    """Utility func to visualize images
+    """
+    Utility func to visualize images
     
     Keyword arguments:
     arFrames -- np.array representing images
@@ -340,36 +350,40 @@ def frames_show(arFrames, nWaitMilliSec = 100):
     nFrames, nHeight, nWidth, nDepth = arFrames.shape
     
     for i in range(nFrames):
-        cv2_imshow(arFrames[i, :, :, :])
+        cv2.imshow(arFrames[i, :, :, :])
         cv2.waitKey(nWaitMilliSec)
 
     return
 
 
 def video_length(sVideoPath):
-    """Uses mediainfo to obtain video info
+    """
+    Uses mediainfo to obtain video info
 
     Keyword arguments:
     sVideoPath -- path to video file
     """
-    return int(check_output(["mediainfo", '--Inform=Video;%Duration%', sVideoPath]))/1000.0
+
+    cap = cv2.VideoCapture(sVideoPath)
+    fps = cap.get(cv2.CAP_PROP_FPS)      # OpenCV2 version 2 used "CV_CAP_PROP_FPS"
+    frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    duration = frame_count/fps
+
+    return duration
 
 
-def videosDir2framesDir(sVideoDir, pickleDirPath, nTargetFrames = None, 
+def process_videos(sVideoDir, nTargetFrames = None, 
     nResizeMinDim = None, tuCropShape = None, bRescale=True):
-    """Extract frames from videos, and apply preprocessing
-
+    """
+    Extract frames from videos, and apply preprocessing
     Input video structure:
-    ... dataset / category (e.g train) / video.mpeg 
-
-    Output:
-    ... sFrameDir / category (e.g train) / videoname / frames.jpg
+    ... dataset / video.mpeg
 
     Keyword arguments: 
     sVideoDir -- dir of videos
     nTargetFrames -- number of frames after downsampling
-    nResizeminDim -- minimum dimension aftre resizing
-    tuCropShape -- tuple (nHeight, nWidth) to crop image - we unpack with * operatorS4
+    nResizeminDim -- minimum dimension after resizing
+    tuCropShape -- tuple (nHeight, nWidth) to crop image - we unpack with * operator
     
     bRescale -- rescale rgb 0-255 value to [-1.0, 1.0] if True (default True)
 
@@ -377,27 +391,22 @@ def videosDir2framesDir(sVideoDir, pickleDirPath, nTargetFrames = None,
     """
 
     # do not (partially) overwrite existing frame directory
-    if os.path.exists(pickleDirPath): 
-       warnings.warn("Frame folder " + pickleDirPath + " already exists, frame extraction stopped")
-       return 
+    # if os.path.exists(pickleDirPath): 
+    #    warnings.warn("Frame folder " + pickleDirPath + " already exists, frame extraction stopped")
+    #    return 
     
     # initialize list 
     sTragetFrames = []
 
-    # get videos. Assume .../dataset / category(e.g train) / video.mpg
+    # get videos. Assume .../dataset / video.mpg
     dfVideos = pd.DataFrame(sorted(glob.glob(sVideoDir + "/*.mpg")), columns=["sVideoPath"])
-    print("Located {} videos in {}, extracting to npy format ...".format(len(dfVideos), sVideoDir))
+    print("Located {} videos in {}, extracting and processing frames...".format(len(dfVideos), sVideoDir))
     if len(dfVideos) == 0: raise ValueError("No videos found")
 
     nCounter = 0
     # loop through all videos and extract frames
     for sVideoPath in dfVideos.sVideoPath:
-
-        # assemble target directory (assumed directories see above)
-        lst_sVideoPath = sVideoPath.split("/")
-        sTargetDir = lst_sVideoPath[-2]
         
-
         # slice videos into frames with OpenCV
         arFrames = video2frames(sVideoPath, nResizeMinDim)
 
@@ -407,20 +416,23 @@ def videosDir2framesDir(sVideoDir, pickleDirPath, nTargetFrames = None,
         fFPS = nFrames / fVideoSec   
 
         # preprocess images
-        arFrames = images_normalize(arFrames, nTargetFrames, *tuCropShape, bRescale )
+        arFrames = images_normalize(arFrames, nTargetFrames, *tuCropShape, bRescale)
         
         # append frames to np.array
         sTragetFrames.append(arFrames)
 
 
-        print("Video %5d | %5.1f sec | %d frames | %4.1f fps | saved %s in %s" % (nCounter, fVideoSec, nFrames, fFPS, str(arFrames.shape), sTargetDir))
+        print("Video %5d | %5.1f sec | %d frames | %4.1f fps | processed %s frames" % (nCounter, fVideoSec, nFrames, fFPS, str(arFrames.shape)))
         nCounter += 1
 
-    sTragetFrames = np.array(sTragetFrames, dtype="float32")
-    
-    # save to binary file
-    print("saving frames to npy directory...")
-    save_to_npy(sTragetFrames, sTargetDir) 
-    print("Done")     
+    sTragetFrames = np.array(sTragetFrames, dtype="float32")     
 
-    return 
+    return sTragetFrames
+
+# if __name__ == "__main__":
+#     dirpath = "dataset"
+#     frames = process_videos(dirpath, nTargetFrames=40,
+#                             nResizeMinDim=256, tuCropShape=(224, 224),
+#                             bRescale=True)
+
+                            
