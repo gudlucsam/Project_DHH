@@ -1,8 +1,13 @@
+import os
 import keras
 import numpy as np
 
+from feature_extraction import features_generator
+from cnn_model import features_2D_model
+
 from keras.layers import Input, Dense, LSTM
 from keras.models import Model, load_model
+from keras.callbacks.callbacks import EarlyStopping, ReduceLROnPlateau
 
 
 
@@ -11,7 +16,7 @@ class lstm_models():
   Builds an encoder decoder (LSTM) to predict sequence of text
           
   Keyword arguments:
-  nFramesTarget -- (int) number of frames in sequence
+  nTargetFrames -- (int) number of frames in sequence
   nFeatureLength -- (int) length of features extracted from CNN per frame ( 1024 or 2048)
   max_sentence_len -- (int) character length of longest target text
   unique_char_tokens -- (int) length of unique character tokens in target text
@@ -21,20 +26,21 @@ class lstm_models():
   """
 
   def __init__(self, index_to_chars, chars_to_index, 
-               nFramesTarget, nFeatureLength, max_sentence_len,
+               nTargetFrames, nFeatureLength, max_sentence_len,
                unique_char_tokens, latent_dim=256, saved_model_path="saved_model/dnn.5"):
     
-    self.saved_model_path = saved_model_path
-    self.nFramesTarget = nFramesTarget
+    # dataset stats
+    self.nTargetFrames = nTargetFrames
     self.nFeatureLength = nFeatureLength
     self.max_sentence_len = max_sentence_len
     self.num_decoder_tokens = unique_char_tokens
-
     # retrieve character_indexes to decode back to text
-    self.index_to_chars, self.chars_to_index = index_to_chars, chars_to_index
-
+    self.index_to_chars = index_to_chars
+    self.chars_to_index = chars_to_index
     # latent dimensionality of the encoding space
     self.latent_dim = latent_dim
+    # dir to save trained model
+    self.saved_model_path = saved_model_path
 
   def encoder_decoder_model(self):
     # inputs to encoder, decoder
@@ -50,13 +56,10 @@ class lstm_models():
     # retrieve encoder states to use as initial states of decoder model
     _, state_h, state_c = encoder(encoder_inputs)
     encoder_states = [state_h, state_c]
-
     # retrieve outputs of decoder
     decoder_outputs, _, _ = decoder_lstm(decoder_inputs, initial_state=encoder_states)
-
     # feed decoder outputs to dense layer for final prediction
     outputs = decoder_dense(decoder_outputs)
-
     # construct encoder-decoder model using Keras functional API
     model = Model(inputs=[encoder_inputs, decoder_inputs], outputs=outputs)
 
@@ -67,7 +70,7 @@ class lstm_models():
     model = load_model(self.saved_model_path)
 
     encoder_inputs = model.input[0]   # input_1
-    encoder_outputs, state_h_enc, state_c_enc = model.layers[2].output   # lstm_1
+    _, state_h_enc, state_c_enc = model.layers[2].output   # lstm_1
     encoder_states = [state_h_enc, state_c_enc]
     encoder_model = Model(encoder_inputs, encoder_states)
 
@@ -88,13 +91,9 @@ class lstm_models():
 
 
   def decode_frame_sequence(self, frames_features_sequence):
-    # construct model for prediction
-    encoder_model, decoder_model = self.construct_prediction_model()
-
-    # ==========decode sentence back to text============
 
     # encode the input frames feature sequence to get the internal state vectors.
-    states_value = encoder_model.predict(frames_features_sequence)
+    states_value = self.encoder_model.predict(frames_features_sequence)
       
     # generate empty target sequence of length 1 with only the start character
     target_seq = np.zeros((1, 1, self.num_decoder_tokens))
@@ -104,7 +103,7 @@ class lstm_models():
     stop_condition = False
     decoded_sentence = ''
     while not stop_condition:
-      output_tokens, h, c = decoder_model.predict([target_seq] + states_value)
+      output_tokens, h, c = self.decoder_model.predict([target_seq] + states_value)
         
       # sample a token and add the corresponding character to the decoded sequence
       sampled_token_index = np.argmax(output_tokens[0, -1, :])
@@ -123,4 +122,65 @@ class lstm_models():
       states_value = [h, c]
         
     return decoded_sentence 
+
+  def train(self, model_params, videos_path, labels_path, nResizeMinDim):
+    if os.path.exists(self.saved_model_path):
+      print("Model already trained and saved to", self.saved_model_path)
+      print("Training stopping...")
+
+      # construct model for prediction
+      print("reconstructing models from saved model for prediction....")
+      self.encoder_model, self.decoder_model = self.construct_prediction_model()
+    
+    else:
+      # build CNN for feature extraction
+      feature_extraction_model = features_2D_model(**model_params)
+      
+      # extract features using CNN, and process frames
+      encoder_input_data, decoder_input_data = features_generator(
+                                  videos_path, labels_path, feature_extraction_model,
+                                  max_sentence_len=self.max_sentence_len, num_chars=self.num_decoder_tokens,
+                                  nTargetFrames=self.nTargetFrames, nResizeMinDim=nResizeMinDim)
+
+      # initialize target data without start characters
+      print("Initializing target data fro training...")
+      decoder_target_data = np.zeros(decoder_input_data.shape, dtype="int32")
+      decoder_target_data[:, 0:-1, :] = decoder_input_data[:, 1:, :]
+
+      print("Building encoder - decoder model for training...")
+      # construct encoder -decoder model
+      model = self.encoder_decoder_model()
+
+      # callbacks
+      early_stopping = EarlyStopping(monitor='val_loss', min_delta=0, patience=5,
+                                      verbose=0, mode='auto', baseline=None, restore_best_weights=False)
+      reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.2, patience=3, min_lr=0.001)
+
+      # compile model to train
+      print("Compiling model....")
+      model.compile(optimizer='rmsprop', loss='categorical_crossentropy')
+
+      # train lstm model
+      print("Training model....")
+      model.fit([encoder_input_data, decoder_input_data], decoder_target_data,
+                  batch_size=5, epochs=2, validation_split=0.2)
+
+      # create dir if not exists
+      print("Saving model....")
+      if not os.path.exists(self.saved_model_path):
+        os.makedirs("saved_model")
+
+      # save model
+      model.save('saved_model/dnn.h5')
+
+      print("Done")
+
+  def predict(self, frames_sequence):
+    sentences = []
+    for sequence in frames_sequence:
+      predicted_sentence= self.decode_frame_sequence(sequence)
+      sentences.append(predicted_sentence)
+
+    return sentences
+
 
