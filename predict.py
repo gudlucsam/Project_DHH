@@ -1,8 +1,11 @@
+import os
 import numpy as np
 
 from utility_functions import token_to_index
 from encoder_decoder import lstm_models
 
+# suppress warnings
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 if __name__ == "__main__":
 
@@ -31,13 +34,13 @@ if __name__ == "__main__":
     nFeatureLength = model_params["output_shape"][0]
     nTargetFrames = 40
     latent_dim = 256
-    saved_model_path="saved_model/dnn.5"
+    nResizeMinDim = 256
+    saved_model_path="saved_model/dnn.h5"
 
     # build encoder - decoder model
-    instance = lstm_models(index_to_chars, chars_to_index,
-                            nTargetFrames, nFeatureLength,
-                            max_sentence_len, num_uChars)
-    # train model
-    model = instance.encoder_decoder_model()
+    instance = lstm_models(index_to_chars, chars_to_index, nTargetFrames,
+                            nFeatureLength,max_sentence_len, num_uChars,
+                            latent_dim=latent_dim, saved_model_path=saved_model_path)
 
-   
+    # train model
+    instance.train(model_params, videos_path, labels_path, nResizeMinDim)

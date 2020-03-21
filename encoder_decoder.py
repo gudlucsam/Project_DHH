@@ -10,7 +10,6 @@ from keras.models import Model, load_model
 from keras.callbacks.callbacks import EarlyStopping, ReduceLROnPlateau
 
 
-
 class lstm_models():
   """
   Builds an encoder decoder (LSTM) to predict sequence of text
@@ -27,7 +26,7 @@ class lstm_models():
 
   def __init__(self, index_to_chars, chars_to_index, 
                nTargetFrames, nFeatureLength, max_sentence_len,
-               unique_char_tokens, latent_dim=256, saved_model_path="saved_model/dnn.5"):
+               unique_char_tokens, latent_dim=256, saved_model_path="saved_model/dnn.h5"):
     
     # dataset stats
     self.nTargetFrames = nTargetFrames
@@ -88,7 +87,6 @@ class lstm_models():
     decoder_model = Model([decoder_inputs] + decoder_states_inputs, [decoder_outputs] + decoder_states)
 
     return encoder_model, decoder_model
-
 
   def decode_frame_sequence(self, frames_features_sequence):
 
@@ -182,5 +180,3 @@ class lstm_models():
       sentences.append(predicted_sentence)
 
     return sentences
-
-
