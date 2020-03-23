@@ -90,6 +90,9 @@ class lstm_models():
 
   def decode_frame_sequence(self, frames_features_sequence):
 
+    # convert (53, 44) to (1, 53, 44)
+    frames_sequence = np.expand_dims(frames_sequence, axis=0)
+    
     # encode the input frames feature sequence to get the internal state vectors.
     states_value = self.encoder_model.predict(frames_features_sequence)
       
@@ -127,7 +130,7 @@ class lstm_models():
       print("Training stopping...")
 
       # construct model for prediction
-      print("reconstructing models from saved model for prediction....")
+      print("reconstructing models for prediction....")
       self.encoder_model, self.decoder_model = self.construct_prediction_model()
     
     else:
@@ -142,11 +145,11 @@ class lstm_models():
 
       # initialize target data without start characters
       print("Initializing target data fro training...")
-      decoder_target_data = np.zeros(decoder_input_data.shape, dtype="int32")
-      decoder_target_data[:, 0:-1, :] = decoder_input_data[:, 1:, :]
+      self.decoder_target_data = np.zeros(decoder_input_data.shape, dtype="int32")
+      self.decoder_target_data[:, 0:-1, :] = decoder_input_data[:, 1:, :]
 
       print("Building encoder - decoder model for training...")
-      # construct encoder -decoder model
+      # construct encoder -decoder model for training
       model = self.encoder_decoder_model()
 
       # callbacks
@@ -160,23 +163,31 @@ class lstm_models():
 
       # train lstm model
       print("Training model....")
-      model.fit([encoder_input_data, decoder_input_data], decoder_target_data,
+      model.fit([encoder_input_data, decoder_input_data], self.decoder_target_data,
                   batch_size=5, epochs=2, validation_split=0.2)
 
       # create dir if not exists
       print("Saving model....")
       if not os.path.exists(self.saved_model_path):
-        os.makedirs("saved_model")
+        os.makedirs("saved_model", exist_ok=True)
 
       # save model
-      model.save('saved_model/dnn.h5')
+      model.save('saved_model/dhh.h5')
 
       print("Done")
 
-  def predict(self, frames_sequence):
+      # construct model for prediction
+      print("reconstructing models for prediction....")
+      self.encoder_model, self.decoder_model = self.construct_prediction_model()
+
+  def predict(self, frames_sequence=None):
+    """
+    predict using sequences of frames
+    """
     sentences = []
-    for sequence in frames_sequence:
+    for sequence in self.decoder_target_data[-30:]:
       predicted_sentence= self.decode_frame_sequence(sequence)
       sentences.append(predicted_sentence)
+      print(predicted_sentence)
 
     return sentences

@@ -2,8 +2,13 @@ import cv2
 import numpy as np
 import time
 
+from utility_functions import images_normalize
+
+
+
 def video_start(device = 0, tuResolution =(320, 240), nFramePerSecond = 30):
-	""" Returns videocapture object/stream
+	"""
+	Returns videocapture object/stream
 	Parameters:
 		device: 0 for the primary webcam, 1 for attached webcam
 	"""
@@ -55,7 +60,35 @@ def video_capture(oStream, tuRectangle = (224, 224), nTimeDuration =4 ):
 
 	return fTimeElapsed, np.array(liFrames)
 
-if __name__ == "__main__":
-   oStream = video_start()
-   tm, video_frames = video_capture(oStream)
-   print(tm, video_frames.shape)
+def capture_frames():
+	"""
+	capture live frames from webcam.
+	"""
+	# construct videoCapture object
+	oStream = video_start()
+	# capture live feeds from webcam
+	tm, video_frames = video_capture(oStream)
+	   
+	return tm, video_frames
+	
+def predict_from_camera(trained_model, nTargetFrames, nHeight, nWidth, bRescale=True):
+	"""
+	perform predictions using live stream from webcam
+	"""
+	# infinite loop
+	while True:
+		# capture live feed
+		tm, video_frames = capture_frames()
+		print("bbbbb", tm, video_frames.shape)
+		# process frames
+		video_frames = images_normalize(video_frames, nTargetFrames, nHeight, nWidth, bRescale=bRescale)
+		print("ccccccc", video_frames.shape)
+		# predict from live feeds
+		prediction = trained_model.predict([video_frames])
+
+		# print outcome
+		print(prediction)
+
+# if __name__ == "__main__":
+#    tm, video_frames = capture_frames()
+#    print(tm, video_frames.shape)

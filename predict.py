@@ -3,6 +3,7 @@ import numpy as np
 
 from utility_functions import token_to_index
 from encoder_decoder import lstm_models
+from videocapture import predict_from_camera
 
 # suppress warnings
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
@@ -25,17 +26,20 @@ if __name__ == "__main__":
 
     videos_path = "dataset"
     labels_path = "dataset_labels.csv"
+    saved_model_path="saved_model/dhh.h5"
 
     # return the number of unique character token, word to index and index to words in dataset
     max_sentence_len, \
     num_uChars, \
     index_to_chars, \
     chars_to_index = token_to_index(labels_path)
-    nFeatureLength = model_params["output_shape"][0]
+
+    
     nTargetFrames = 40
     latent_dim = 256
     nResizeMinDim = 256
-    saved_model_path="saved_model/dnn.h5"
+    nFeatureLength = model_params["output_shape"][0]
+    nHeight, nWidth, _ = model_params["input_shape"]
 
     # build encoder - decoder model
     instance = lstm_models(index_to_chars, chars_to_index, nTargetFrames,
@@ -44,3 +48,7 @@ if __name__ == "__main__":
 
     # train model
     instance.train(model_params, videos_path, labels_path, nResizeMinDim)
+    instance.predict()
+
+    # capture and predict from live webcam feed
+    # predict_from_camera(instance, nTargetFrames, nHeight, nWidth)
