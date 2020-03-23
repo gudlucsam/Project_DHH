@@ -24,7 +24,7 @@ class lstm_models():
   returns keras Model
   """
 
-  def __init__(self, index_to_chars, chars_to_index, 
+  def __init__(self, cnn_model_params, index_to_chars, chars_to_index, 
                nTargetFrames, nFeatureLength, max_sentence_len,
                unique_char_tokens, latent_dim=256, saved_model_path="saved_model/dnn.h5"):
     
@@ -40,6 +40,9 @@ class lstm_models():
     self.latent_dim = latent_dim
     # dir to save trained model
     self.saved_model_path = saved_model_path
+
+    # build CNN for feature extraction
+    self.feature_extraction_model = features_2D_model(**cnn_model_params)
 
   def encoder_decoder_model(self):
     # inputs to encoder, decoder
@@ -90,8 +93,8 @@ class lstm_models():
 
   def decode_frame_sequence(self, frames_features_sequence):
 
-    # convert (53, 44) to (1, 53, 44)
-    frames_sequence = np.expand_dims(frames_sequence, axis=0)
+    # convert (40, 1024) to (1, 40, 1024)
+    frames_features_sequence = np.expand_dims(frames_features_sequence, axis=0)
     
     # encode the input frames feature sequence to get the internal state vectors.
     states_value = self.encoder_model.predict(frames_features_sequence)
@@ -108,6 +111,7 @@ class lstm_models():
         
       # sample a token and add the corresponding character to the decoded sequence
       sampled_token_index = np.argmax(output_tokens[0, -1, :])
+      # print(sampled_token_index)
       sampled_char = self.index_to_chars[sampled_token_index]
       decoded_sentence += sampled_char
         
@@ -124,7 +128,7 @@ class lstm_models():
         
     return decoded_sentence 
 
-  def train(self, model_params, videos_path, labels_path, nResizeMinDim):
+  def train(self, videos_path, labels_path, nResizeMinDim):
     if os.path.exists(self.saved_model_path):
       print("Model already trained and saved to", self.saved_model_path)
       print("Training stopping...")
@@ -134,12 +138,11 @@ class lstm_models():
       self.encoder_model, self.decoder_model = self.construct_prediction_model()
     
     else:
-      # build CNN for feature extraction
-      feature_extraction_model = features_2D_model(**model_params)
+      
       
       # extract features using CNN, and process frames
       encoder_input_data, decoder_input_data = features_generator(
-                                  videos_path, labels_path, feature_extraction_model,
+                                  videos_path, labels_path, self.feature_extraction_model,
                                   max_sentence_len=self.max_sentence_len, num_chars=self.num_decoder_tokens,
                                   nTargetFrames=self.nTargetFrames, nResizeMinDim=nResizeMinDim)
 
@@ -184,9 +187,15 @@ class lstm_models():
     """
     predict using sequences of frames
     """
+    
     sentences = []
-    for sequence in self.decoder_target_data[-30:]:
-      predicted_sentence= self.decode_frame_sequence(sequence)
+    for sequence in frames_sequence:
+      print(sequence.shape)
+      # extract features from cnn model
+      feature_frames = self.feature_extraction_model.predict(sequence)
+      print(feature_frames.shape)
+      # predict using features
+      predicted_sentence= self.decode_frame_sequence(feature_frames)
       sentences.append(predicted_sentence)
       print(predicted_sentence)
 

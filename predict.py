@@ -34,6 +34,10 @@ if __name__ == "__main__":
     index_to_chars, \
     chars_to_index = token_to_index(labels_path)
 
+    print(index_to_chars)
+    print(num_uChars)
+    print(chars_to_index)
+
     
     nTargetFrames = 40
     latent_dim = 256
@@ -42,13 +46,13 @@ if __name__ == "__main__":
     nHeight, nWidth, _ = model_params["input_shape"]
 
     # build encoder - decoder model
-    instance = lstm_models(index_to_chars, chars_to_index, nTargetFrames,
+    instance = lstm_models(model_params, index_to_chars, chars_to_index, nTargetFrames,
                             nFeatureLength,max_sentence_len, num_uChars,
                             latent_dim=latent_dim, saved_model_path=saved_model_path)
 
     # train model
-    instance.train(model_params, videos_path, labels_path, nResizeMinDim)
-    instance.predict()
+    instance.train(videos_path, labels_path, nResizeMinDim)
+    # instance.predict()
 
     # capture and predict from live webcam feed
-    # predict_from_camera(instance, nTargetFrames, nHeight, nWidth)
+    predict_from_camera(instance, nTargetFrames, nHeight, nWidth)

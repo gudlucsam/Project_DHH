@@ -89,10 +89,13 @@ def token_to_index(labelsPath):
     sentence_len = 0
     for text in samples:
       # add "\t" and "\n" to depict start and end of sentence respectively
-      text = "\t"+text+"\n"
-      if len(text) > sentence_len: sentence_len = len(text)
+      text = "\t" + text.lower() + "\n"
+
+      if len(text) > sentence_len:
+          sentence_len = len(text)
+
       target_samples.append(text)
-      st = st.union(set(text)) 
+      st = st.union(set(text))
     
     #total of unique characters
     num_chars = len(st)
@@ -101,29 +104,6 @@ def token_to_index(labelsPath):
     tokenizer.fit_on_texts(target_samples)
 
     return sentence_len, num_chars, tokenizer.index_word, tokenizer.word_index
-
-def npyLoad(sPath):
-    """
-    Load extracted features .npz data from sPath to train LSTM
-
-    sPath -- path to extracted features dir
-    """
-    
-    # load all npz files
-    dfVideos = pd.DataFrame(sorted(glob.glob(sPath + "/*.npz")), columns=["sDataPath"])
-
-    xr = [] 
-    yr = []
-    for path in dfVideos.sDataPath:
-      data = np.load(path)
-      x, y = data["x"], data["y"]
-      xr.append(x)
-      yr.append(y)
-
-      xArr = np.array(xr, dtype="float32")
-      yArr = np.array(yr, dtype="int32")
-
-    return xArr, yArr
 
 def video2frames(sVideoPath, nResizeMinDim):
     """
