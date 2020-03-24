@@ -70,40 +70,55 @@ def images_resize_aspectratio(arImages, nMinDim = 256):
     return np.array(liImages)
 
 
-def token_to_index(labelsPath):
-    """
-    Maps each word token to index and the reverse 
-    for decoding predictions back to words;
-    as well as retrieves the number of unique char tokens.
+def target_text_encoder(labels_path):
+    # Vectorize the data.
+    target_texts = []
+    target_characters = set()
+    # read target text data
+    df = pd.read_csv(labels_path)
+    target_samples = df['translation'].values.tolist()
+    for target_text in target_samples:
+        # We use "tab" as the "start sequence" character
+        # for the targets, and "\n" as "end sequence" character.
+        target_text = '\t' + target_text + '\n'
+        target_texts.append(target_text)
+        for char in target_text:
+            if char not in target_characters:
+                target_characters.add(char)
 
-    Keyword arguments:
-    labelsPath -- (str) path to training target text in csv
+    target_characters = sorted(list(target_characters))
+    num_decoder_tokens = len(target_characters)
+    max_decoder_seq_length = max([len(txt) for txt in target_texts])
 
-    return number of unique characters, word to index, index to words
-    """
-    df = pd.read_csv(labelsPath)
-    samples = df['translation'].values.tolist()
+    print('Number of samples:', len(target_texts))
+    print('Number of unique output tokens:', num_decoder_tokens)
+    print('Max sequence length for outputs:', max_decoder_seq_length)
 
-    target_samples = []
-    st = set()
-    sentence_len = 0
-    for text in samples:
-      # add "\t" and "\n" to depict start and end of sentence respectively
-      text = "\t" + text.lower() + "\n"
+    target_token_index = dict(
+        [(char, i) for i, char in enumerate(target_characters)])
+    reverse_target_char_index = dict(
+    (i, char) for char, i in target_token_index.items())
 
-      if len(text) > sentence_len:
-          sentence_len = len(text)
+    decoder_input_data = np.zeros(
+        (len(target_texts), max_decoder_seq_length, num_decoder_tokens),
+        dtype='float32')
+    decoder_target_data = np.zeros(
+        (len(target_texts), max_decoder_seq_length, num_decoder_tokens),
+        dtype='float32')
 
-      target_samples.append(text)
-      st = st.union(set(text))
-    
-    #total of unique characters
-    num_chars = len(st)
-    # one-hot encode by character level
-    tokenizer = Tokenizer(num_words=num_chars, char_level=True)
-    tokenizer.fit_on_texts(target_samples)
+    for i, target_text in enumerate(target_texts):
+        for t, char in enumerate(target_text):
+            # decoder_target_data is ahead of decoder_input_data by one timestep
+            decoder_input_data[i, t, target_token_index[char]] = 1
+            if t > 0:
+                # decoder_target_data will be ahead by one timestep
+                # and will not include the start character.
+                decoder_target_data[i, t - 1, target_token_index[char]] = 1
+        decoder_input_data[i, t + 1:, target_token_index[' ']] = 1
+        decoder_target_data[i, t:, target_token_index[' ']] = 1
 
-    return sentence_len, num_chars, tokenizer.index_word, tokenizer.word_index
+    return (max_decoder_seq_length, num_decoder_tokens, target_token_index, \
+            reverse_target_char_index, decoder_input_data, decoder_target_data)
 
 def video2frames(sVideoPath, nResizeMinDim):
     """
@@ -409,7 +424,16 @@ def process_videos(sVideoDir, nTargetFrames = None,
 
     return sTragetFrames
 
-# if __name__ == "__main__":
+if __name__ == "__main__":
+    max_sentence_len, \
+    num_uChars, \
+    index_to_chars, \
+    chars_to_index = token_to_index("dataset_labels.csv")
+
+    print(max_sentence_len, \
+    num_uChars, \
+    index_to_chars, \
+    chars_to_index)
 #     dirpath = "dataset"
 #     frames = process_videos(dirpath, nTargetFrames=40,
 #                             nResizeMinDim=256, tuCropShape=(224, 224),

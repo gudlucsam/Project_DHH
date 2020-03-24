@@ -11,8 +11,7 @@ import pandas as pd
 from datagenerator import data_generator
 
 
-def features_generator(videos_path, labels_path, keModel, max_sentence_len=53, \
-                            num_chars=44, nTargetFrames=40, nResizeMinDim=256):
+def features_generator(videos_path, keModel, nTargetFrames=40, nResizeMinDim=256):
     """
     Used by  InceptionV3 or MobileNet architecture to extract features from video frames.
     The (video) frames (2-dimensional) are fed into keModel (eg MobileNet/InceptionV3 without top layers)
@@ -31,10 +30,13 @@ def features_generator(videos_path, labels_path, keModel, max_sentence_len=53, \
     # prepare frame generator - without shuffling!
     _, h, w, _ = keModel.input_shape
     tuCropShape = (h, w)
-    frames, labels = data_generator(videos_path, labels_path, tuCropShape=tuCropShape,
-                                    max_sentence_len=max_sentence_len, 
-                                    num_chars=num_chars, nTargetFrames=nTargetFrames,
+    frames = data_generator(videos_path, tuCropShape=tuCropShape, nTargetFrames=nTargetFrames,
                                     nResizeMinDim=nResizeMinDim)
+
+    #  frames, labels = data_generator(videos_path, labels_path, tuCropShape=tuCropShape,
+    #                                 max_sentence_len=max_sentence_len, 
+    #                                 num_chars=num_chars, nTargetFrames=nTargetFrames,
+    #                                 nResizeMinDim=nResizeMinDim)
 
     print("Predict features with %s ... " % keModel.name)
     nSamples = frames.shape[0]
@@ -49,4 +51,5 @@ def features_generator(videos_path, labels_path, keModel, max_sentence_len=53, \
         # append features
         feature_frames.append(arFeature)
 
-    return np.array(feature_frames), labels
+    return np.array(feature_frames)
+    # return np.array(feature_frames), labels

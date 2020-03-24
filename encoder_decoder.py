@@ -4,6 +4,7 @@ import numpy as np
 
 from feature_extraction import features_generator
 from cnn_model import features_2D_model
+from utility_functions import target_text_encoder
 
 from keras.layers import Input, Dense, LSTM
 from keras.models import Model, load_model
@@ -24,18 +25,25 @@ class lstm_models():
   returns keras Model
   """
 
-  def __init__(self, cnn_model_params, index_to_chars, chars_to_index, 
-               nTargetFrames, nFeatureLength, max_sentence_len,
-               unique_char_tokens, latent_dim=256, saved_model_path="saved_model/dnn.h5"):
+  def __init__(self, labels_path, cnn_model_params, nTargetFrames, nFeatureLength, 
+              latent_dim=256, saved_model_path="saved_model/dnn.h5"):
     
+    # return the number of unique character token, word to index and index to words in dataset
+    self.max_sentence_len, \
+    self.num_decoder_tokens, \
+    self.index_to_chars, \
+    self.chars_to_index, \
+    self.decoder_input_data, \
+    self.decoder_target_data = target_text_encoder(labels_path)
+
     # dataset stats
     self.nTargetFrames = nTargetFrames
     self.nFeatureLength = nFeatureLength
-    self.max_sentence_len = max_sentence_len
-    self.num_decoder_tokens = unique_char_tokens
+    # self.max_sentence_len = max_sentence_len
+    # self.num_decoder_tokens = unique_char_tokens
     # retrieve character_indexes to decode back to text
-    self.index_to_chars = index_to_chars
-    self.chars_to_index = chars_to_index
+    # self.index_to_chars = index_to_chars
+    # self.chars_to_index = chars_to_index
     # latent dimensionality of the encoding space
     self.latent_dim = latent_dim
     # dir to save trained model
@@ -128,7 +136,7 @@ class lstm_models():
         
     return decoded_sentence 
 
-  def train(self, videos_path, labels_path, nResizeMinDim):
+  def train(self, videos_path, nResizeMinDim):
     if os.path.exists(self.saved_model_path):
       print("Model already trained and saved to", self.saved_model_path)
       print("Training stopping...")
@@ -141,15 +149,14 @@ class lstm_models():
       
       
       # extract features using CNN, and process frames
-      encoder_input_data, decoder_input_data = features_generator(
-                                  videos_path, labels_path, self.feature_extraction_model,
-                                  max_sentence_len=self.max_sentence_len, num_chars=self.num_decoder_tokens,
+      encoder_input_data = features_generator(
+                                  videos_path, self.feature_extraction_model,
                                   nTargetFrames=self.nTargetFrames, nResizeMinDim=nResizeMinDim)
 
       # initialize target data without start characters
-      print("Initializing target data fro training...")
-      self.decoder_target_data = np.zeros(decoder_input_data.shape, dtype="int32")
-      self.decoder_target_data[:, 0:-1, :] = decoder_input_data[:, 1:, :]
+      # print("Initializing target data fro training...")
+      # self.decoder_target_data = np.zeros(decoder_input_data.shape, dtype="int32")
+      # self.decoder_target_data[:, 0:-1, :] = decoder_input_data[:, 1:, :]
 
       print("Building encoder - decoder model for training...")
       # construct encoder -decoder model for training
@@ -166,7 +173,7 @@ class lstm_models():
 
       # train lstm model
       print("Training model....")
-      model.fit([encoder_input_data, decoder_input_data], self.decoder_target_data,
+      model.fit([encoder_input_data, self.decoder_input_data], self.decoder_target_data,
                   batch_size=5, epochs=2, validation_split=0.2)
 
       # create dir if not exists
@@ -183,17 +190,15 @@ class lstm_models():
       print("reconstructing models for prediction....")
       self.encoder_model, self.decoder_model = self.construct_prediction_model()
 
-  def predict(self, frames_sequence=None):
+  def predict(self, frames_sequence):
     """
     predict using sequences of frames
     """
     
     sentences = []
     for sequence in frames_sequence:
-      print(sequence.shape)
       # extract features from cnn model
       feature_frames = self.feature_extraction_model.predict(sequence)
-      print(feature_frames.shape)
       # predict using features
       predicted_sentence= self.decode_frame_sequence(feature_frames)
       sentences.append(predicted_sentence)

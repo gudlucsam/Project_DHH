@@ -24,32 +24,31 @@ from keras.preprocessing.sequence import pad_sequences
 
 
 
-def textEncoder(labels_path, max_sentence_len, num_chars):
-    """
-    Encode target texts
-    """
+# def textEncoder(labels_path, max_sentence_len, num_chars):
+#     """
+#     Encode target texts
+#     """
 
-    df = pd.read_csv(labels_path)
-    samples = df['translation'].values.tolist()
+#     df = pd.read_csv(labels_path)
+#     samples = df['translation'].values.tolist()
 
-    target_samples = []
-    for text in samples:
-        # add "\t" and "\n" to depict start and end of sentence respectively
-        text = "\t"+text+"\n"
-        target_samples.append(text)
+#     target_samples = []
+#     for text in samples:
+#         # add "\t" and "\n" to depict start and end of sentence respectively
+#         text = "\t"+text+"\n"
+#         target_samples.append(text)
     
-    # one-hot encode by character level
-    tokenizer = Tokenizer(num_words=num_chars, char_level=True)
-    tokenizer.fit_on_texts(target_samples)
-    sequences = tokenizer.texts_to_sequences(target_samples)
-    sequences = pad_sequences(sequences, maxlen=max_sentence_len, padding="post")
-    encoded_sequences = to_categorical(sequences, num_chars, dtype="int32")
+#     # one-hot encode by character level
+#     tokenizer = Tokenizer(num_words=num_chars, char_level=True)
+#     tokenizer.fit_on_texts(target_samples)
+#     sequences = tokenizer.texts_to_sequences(target_samples)
+#     sequences = pad_sequences(sequences, maxlen=max_sentence_len, padding="post")
+#     encoded_sequences = to_categorical(sequences, num_chars, dtype="int32")
 
-    return np.array(encoded_sequences)
+#     return np.array(encoded_sequences)
 
 
-def data_generator(videos_path, labels_path, tuCropShape=(224, 224), max_sentence_len=53, \
-                    num_chars=44, nTargetFrames=40, nResizeMinDim=256):
+def data_generator(videos_path, tuCropShape=(224, 224), nTargetFrames=40, nResizeMinDim=256):
     
     # preprocess video frames
     frames = process_videos(videos_path, nTargetFrames=nTargetFrames,
@@ -57,11 +56,11 @@ def data_generator(videos_path, labels_path, tuCropShape=(224, 224), max_sentenc
                             bRescale=True)
 
     # preprocess target labels
-    print("One-hot encoding labels...") 
-    labels = textEncoder(labels_path, max_sentence_len, num_chars)
+    # print("One-hot encoding labels...") 
+    # labels = textEncoder(labels_path, max_sentence_len, num_chars)
     
-    return frames, labels
-
+    return frames
+    # return frames, labels
 
 
 # if __name__ == "__main__":
