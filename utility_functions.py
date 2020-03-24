@@ -90,9 +90,9 @@ def target_text_encoder(labels_path):
     num_decoder_tokens = len(target_characters)
     max_decoder_seq_length = max([len(txt) for txt in target_texts])
 
-    print('Number of samples:', len(target_texts))
-    print('Number of unique output tokens:', num_decoder_tokens)
-    print('Max sequence length for outputs:', max_decoder_seq_length)
+    # print('Number of samples:', len(target_texts))
+    # print('Number of unique output tokens:', num_decoder_tokens)
+    # print('Max sequence length for outputs:', max_decoder_seq_length)
 
     target_token_index = dict(
         [(char, i) for i, char in enumerate(target_characters)])
@@ -385,11 +385,6 @@ def process_videos(sVideoDir, nTargetFrames = None,
     preprocess and save preprocessed data to npy format in 
     """
 
-    # do not (partially) overwrite existing frame directory
-    # if os.path.exists(pickleDirPath): 
-    #    warnings.warn("Frame folder " + pickleDirPath + " already exists, frame extraction stopped")
-    #    return 
-    
     # initialize list 
     sTragetFrames = []
 
@@ -398,7 +393,7 @@ def process_videos(sVideoDir, nTargetFrames = None,
     print("Located {} videos in {}, extracting and processing frames...".format(len(dfVideos), sVideoDir))
     if len(dfVideos) == 0: raise ValueError("No videos found")
 
-    nCounter = 0
+    # nCounter = 0
     # loop through all videos and extract frames
     for sVideoPath in dfVideos.sVideoPath:
         
@@ -423,20 +418,4 @@ def process_videos(sVideoDir, nTargetFrames = None,
     sTragetFrames = np.array(sTragetFrames, dtype="float32")     
 
     return sTragetFrames
-
-if __name__ == "__main__":
-    max_sentence_len, \
-    num_uChars, \
-    index_to_chars, \
-    chars_to_index = token_to_index("dataset_labels.csv")
-
-    print(max_sentence_len, \
-    num_uChars, \
-    index_to_chars, \
-    chars_to_index)
-#     dirpath = "dataset"
-#     frames = process_videos(dirpath, nTargetFrames=40,
-#                             nResizeMinDim=256, tuCropShape=(224, 224),
-#                             bRescale=True)
-
-                            
+                    

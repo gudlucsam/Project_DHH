@@ -28,26 +28,21 @@ class lstm_models():
   def __init__(self, labels_path, cnn_model_params, nTargetFrames, nFeatureLength, 
               latent_dim=256, saved_model_path="saved_model/dnn.h5"):
     
-    # return the number of unique character token, word to index and index to words in dataset
-    self.max_sentence_len, \
-    self.num_decoder_tokens, \
-    self.index_to_chars, \
-    self.chars_to_index, \
-    self.decoder_input_data, \
-    self.decoder_target_data = target_text_encoder(labels_path)
-
+    
     # dataset stats
     self.nTargetFrames = nTargetFrames
     self.nFeatureLength = nFeatureLength
-    # self.max_sentence_len = max_sentence_len
-    # self.num_decoder_tokens = unique_char_tokens
-    # retrieve character_indexes to decode back to text
-    # self.index_to_chars = index_to_chars
-    # self.chars_to_index = chars_to_index
     # latent dimensionality of the encoding space
     self.latent_dim = latent_dim
     # dir to save trained model
     self.saved_model_path = saved_model_path
+    # return the number of unique character token, word to index and index to words in dataset
+    self.max_sentence_len, \
+    self.num_decoder_tokens, \
+    self.chars_to_index, \
+    self.index_to_chars, \
+    self.decoder_input_data, \
+    self.decoder_target_data = target_text_encoder(labels_path)
 
     # build CNN for feature extraction
     self.feature_extraction_model = features_2D_model(**cnn_model_params)
@@ -119,7 +114,6 @@ class lstm_models():
         
       # sample a token and add the corresponding character to the decoded sequence
       sampled_token_index = np.argmax(output_tokens[0, -1, :])
-      # print(sampled_token_index)
       sampled_char = self.index_to_chars[sampled_token_index]
       decoded_sentence += sampled_char
         
@@ -146,20 +140,14 @@ class lstm_models():
       self.encoder_model, self.decoder_model = self.construct_prediction_model()
     
     else:
-      
-      
+       
       # extract features using CNN, and process frames
-      encoder_input_data = features_generator(
-                                  videos_path, self.feature_extraction_model,
+
+      encoder_input_data = features_generator(videos_path, self.feature_extraction_model,
                                   nTargetFrames=self.nTargetFrames, nResizeMinDim=nResizeMinDim)
 
-      # initialize target data without start characters
-      # print("Initializing target data fro training...")
-      # self.decoder_target_data = np.zeros(decoder_input_data.shape, dtype="int32")
-      # self.decoder_target_data[:, 0:-1, :] = decoder_input_data[:, 1:, :]
-
-      print("Building encoder - decoder model for training...")
       # construct encoder -decoder model for training
+      print("Building encoder - decoder model for training...")
       model = self.encoder_decoder_model()
 
       # callbacks
@@ -174,7 +162,7 @@ class lstm_models():
       # train lstm model
       print("Training model....")
       model.fit([encoder_input_data, self.decoder_input_data], self.decoder_target_data,
-                  batch_size=5, epochs=2, validation_split=0.2)
+                  batch_size=5, epochs=20, validation_split=0.2)
 
       # create dir if not exists
       print("Saving model....")
@@ -202,6 +190,5 @@ class lstm_models():
       # predict using features
       predicted_sentence= self.decode_frame_sequence(feature_frames)
       sentences.append(predicted_sentence)
-      print(predicted_sentence)
 
     return sentences

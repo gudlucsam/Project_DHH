@@ -8,7 +8,7 @@ import keras
 import numpy as np
 import pandas as pd
 
-from datagenerator import data_generator
+from utility_functions import process_videos
 
 
 def features_generator(videos_path, keModel, nTargetFrames=40, nResizeMinDim=256):
@@ -27,16 +27,14 @@ def features_generator(videos_path, keModel, nTargetFrames=40, nResizeMinDim=256
 
     returns None
     """
-    # prepare frame generator - without shuffling!
     _, h, w, _ = keModel.input_shape
     tuCropShape = (h, w)
-    frames = data_generator(videos_path, tuCropShape=tuCropShape, nTargetFrames=nTargetFrames,
-                                    nResizeMinDim=nResizeMinDim)
 
-    #  frames, labels = data_generator(videos_path, labels_path, tuCropShape=tuCropShape,
-    #                                 max_sentence_len=max_sentence_len, 
-    #                                 num_chars=num_chars, nTargetFrames=nTargetFrames,
-    #                                 nResizeMinDim=nResizeMinDim)
+    # preprocess video frames
+    frames = process_videos(videos_path, nTargetFrames=nTargetFrames,
+                            nResizeMinDim=nResizeMinDim, tuCropShape=tuCropShape,
+                            bRescale=True)
+
 
     print("Predict features with %s ... " % keModel.name)
     nSamples = frames.shape[0]
