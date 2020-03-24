@@ -190,5 +190,6 @@ class lstm_models():
       # predict using features
       predicted_sentence= self.decode_frame_sequence(feature_frames)
       sentences.append(predicted_sentence)
+      print(predicted_sentence)
 
     return sentences

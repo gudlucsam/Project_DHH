@@ -395,8 +395,8 @@ def process_videos(sVideoDir, nTargetFrames = None,
 
     # nCounter = 0
     # loop through all videos and extract frames
-    for sVideoPath in dfVideos.sVideoPath:
-        
+    for i, sVideoPath in enumerate(dfVideos.sVideoPath):
+        print("processing video", i)
         # slice videos into frames with OpenCV
         arFrames = video2frames(sVideoPath, nResizeMinDim)
 
