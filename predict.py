@@ -42,11 +42,12 @@ if __name__ == "__main__":
     # train model
     instance.train(videos_path, nResizeMinDim)
     # preprocess video frames
-    frames = process_videos(videos_path, nTargetFrames=nTargetFrames,
-                            nResizeMinDim=nResizeMinDim, tuCropShape=tuCropShape,
-                            bRescale=True)
+    
+    # frames = process_videos(videos_path, nTargetFrames=nTargetFrames,
+    #                         nResizeMinDim=nResizeMinDim, tuCropShape=tuCropShape,
+    #                         bRescale=True)
                             
-    instance.predict(frames)
+    # instance.predict(frames)
 
     # capture and predict from live webcam feed
-    # predict_from_camera(instance, nTargetFrames, nHeight, nWidth)
+    predict_from_camera(instance, nTargetFrames, nHeight, nWidth)
