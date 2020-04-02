@@ -389,7 +389,7 @@ def process_videos(sVideoDir, nTargetFrames = None,
     sTragetFrames = []
 
     # get videos. Assume .../dataset / video.mpg
-    dfVideos = pd.DataFrame(sorted(glob.glob(sVideoDir + "/*.mpg")), columns=["sVideoPath"])
+    dfVideos = pd.DataFrame(sorted(glob.glob(sVideoDir + "/*.[mp4][mpg]*")), columns=["sVideoPath"])
     print("Located {} videos in {}, extracting and processing frames...".format(len(dfVideos), sVideoDir))
     if len(dfVideos) == 0: raise ValueError("No videos found")
 

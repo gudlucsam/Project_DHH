@@ -96,6 +96,8 @@ data_collection/processed_data/
 data_collection/target_data/
 data_collection/videos/
 downloaded/
+dataset/
+dataset_labels.csv
 
 # PEP 582; used by e.g. github.com/David-OConnor/pyflow
 __pypackages__/

@@ -6,7 +6,7 @@ from utility_functions import images_normalize
 
 
 
-def video_start(device = 0, tuResolution =(320, 240), nFramePerSecond = 30):
+def video_start(device = 0, tuResolution =(320, 300), nFramePerSecond = 30):
 	"""
 	Returns videocapture object/stream
 	Parameters:
@@ -35,7 +35,7 @@ def video_start(device = 0, tuResolution =(320, 240), nFramePerSecond = 30):
 
 	return oStream
 
-def video_capture(oStream, tuRectangle = (224, 224), nTimeDuration =4 ):
+def video_capture(oStream, tuRectangle = (320, 300), nTimeDuration =4 ):
 	liFrames = []
 	fTimeStart = time.time()
 
@@ -60,12 +60,12 @@ def video_capture(oStream, tuRectangle = (224, 224), nTimeDuration =4 ):
 
 	return fTimeElapsed, np.array(liFrames)
 
-def capture_frames():
+def capture_frames(tuResolution=(320, 300)):
 	"""
 	capture live frames from webcam.
 	"""
 	# construct videoCapture object
-	oStream = video_start()
+	oStream = video_start(tuResolution=(320, 300))
 	# capture live feeds from webcam
 	tm, video_frames = video_capture(oStream)
 	   
@@ -79,15 +79,13 @@ def predict_from_camera(trained_model, nTargetFrames, nHeight, nWidth, bRescale=
 	while True:
 		# capture live feed
 		tm, video_frames = capture_frames()
-		print("bbbbb", tm, video_frames.shape)
 		# process frames
 		video_frames = images_normalize(video_frames, nTargetFrames, nHeight, nWidth, bRescale=bRescale)
-		print("ccccccc", video_frames.shape)
 		# predict from live feeds
 		prediction = trained_model.predict([video_frames])
 
 		# print outcome
-		print(prediction)
+		print(prediction[0])
 
 # if __name__ == "__main__":
 #    tm, video_frames = capture_frames()

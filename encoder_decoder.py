@@ -26,7 +26,7 @@ class lstm_models():
   """
 
   def __init__(self, labels_path, cnn_model_params, nTargetFrames, nFeatureLength, 
-              latent_dim=256, saved_model_path="saved_model/dnn.h5"):
+              latent_dim=256, saved_model_path="saved_models/mobilenet/dnn.h5"):
     
     
     # dataset stats
@@ -45,7 +45,11 @@ class lstm_models():
     self.decoder_target_data = target_text_encoder(labels_path)
 
     # build CNN for feature extraction
-    self.feature_extraction_model = features_2D_model(**cnn_model_params)
+    self.feature_extraction_model = features_2D_model(
+            cnn_model_params["mName"],
+            cnn_model_params["input_shape"],
+            cnn_model_params["output_shape"])
+
 
   def encoder_decoder_model(self):
     # inputs to encoder, decoder
@@ -142,7 +146,6 @@ class lstm_models():
     else:
        
       # extract features using CNN, and process frames
-
       encoder_input_data = features_generator(videos_path, self.feature_extraction_model,
                                   nTargetFrames=self.nTargetFrames, nResizeMinDim=nResizeMinDim)
 
@@ -167,10 +170,10 @@ class lstm_models():
       # create dir if not exists
       print("Saving model....")
       if not os.path.exists(self.saved_model_path):
-        os.makedirs("saved_model", exist_ok=True)
+        os.makedirs("/".join(self.saved_model_path.split("/")[:-1]), exist_ok=True)
 
       # save model
-      model.save('saved_model/dhh.h5')
+      model.save(self.saved_model_path)
 
       print("Done")
 
@@ -190,6 +193,6 @@ class lstm_models():
       # predict using features
       predicted_sentence= self.decode_frame_sequence(feature_frames)
       sentences.append(predicted_sentence)
-      print(predicted_sentence)
+      # print(predicted_sentence)
 
     return sentences

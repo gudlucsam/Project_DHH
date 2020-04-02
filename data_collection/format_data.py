@@ -22,7 +22,7 @@ def format_data(sub_folders, dest_video_dir, dest_label_dir):
     count = 0
     for videos_path in sub_folders:
 
-        videos = sorted(glob.glob(videos_path + "/*.[mp4][mpg]*"))
+        videos = sorted(glob.glob(videos_path + "/*.mp4"))
         csv_text = sorted(glob.glob(videos_path + "/*.csv"))
 
         # read in csv data
@@ -33,7 +33,7 @@ def format_data(sub_folders, dest_video_dir, dest_label_dir):
                 data_dict[ln[0]] = re.sub('[:,.)(?!;*"-]', "", ln[1].lower()) 
 
         # create csv file to store target text
-        with open(dest_label_dir, mode='w', newline='') as f:
+        with open(dest_label_dir, mode='a+', newline='') as f:
             csv_writer = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
             # loop and copy videos to dataset folder for training
@@ -42,6 +42,7 @@ def format_data(sub_folders, dest_video_dir, dest_label_dir):
                 text = data_dict[key]
                 dest = os.path.join(dest_video_dir, str(count)+"."+vid.split("\\")[-1].split(".")[-1])
                 # copy to destination
+                print(count, text, "copying ",vid + "...")
                 shutil.copy(vid, dest)
                 # write to csv
                 csv_writer.writerow([count, text])
