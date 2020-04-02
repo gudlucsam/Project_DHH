@@ -81,7 +81,6 @@ def train_model():
 
 @app.route("/predict", methods=['GET', 'POST'])
 def predict():
-
     return None
 
 
