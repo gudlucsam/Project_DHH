@@ -8,7 +8,7 @@ import keras
 import numpy as np
 import pandas as pd
 
-from utility_functions import process_videos
+from .utility_functions import process_videos
 
 
 def features_generator(videos_path, keModel, nTargetFrames=40, nResizeMinDim=256):

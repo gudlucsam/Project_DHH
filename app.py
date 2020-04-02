@@ -1,11 +1,11 @@
 import os
 import numpy as np
 
-from model import config
+from model_lib import config
 
-from model.utility_functions import target_text_encoder, process_videos
-from model.encoder_decoder import lstm_models
-from model.videocapture import predict_from_camera
+from model_lib.utility_functions import target_text_encoder, process_videos
+from model_lib.encoder_decoder import lstm_models
+from model_lib.videocapture import predict_from_camera
 
 from flask import Flask, jsonify
 

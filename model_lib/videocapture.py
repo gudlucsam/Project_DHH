@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import time
 
-from utility_functions import images_normalize
+from .utility_functions import images_normalize
 
 
 

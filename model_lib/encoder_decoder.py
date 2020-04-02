@@ -2,9 +2,9 @@ import os
 import keras
 import numpy as np
 
-from feature_extraction import features_generator
-from cnn_model import features_2D_model
-from utility_functions import target_text_encoder
+from .feature_extraction import features_generator
+from .cnn_model import features_2D_model
+from .utility_functions import target_text_encoder
 
 from keras.layers import Input, Dense, LSTM
 from keras.models import Model, load_model
