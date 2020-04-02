@@ -13,7 +13,6 @@ from flask import Flask, jsonify
 
 # instantiate flask
 app = Flask(__name__)
-app.debug = True
 
 model = None
 
@@ -23,7 +22,7 @@ model = None
 def index():
     return "Hello Word"
 
-@app.route("/", methods=['GET'])
+@app.route("/select_model", methods=['GET'])
 def select_feature_extraction_model():
 
     # retrieve payload
@@ -43,7 +42,7 @@ def select_feature_extraction_model():
 
     # retrieve model params
     nFeatureLength = model_params["output_shape"][0]
-    saved_model_path= model_params["saved_model_path"]
+    saved_model_path = model_params["saved_model_path"]
 
     labels_path = config.labels_path
     nTargetFrames = config.nTargetFrames
@@ -87,4 +86,4 @@ def predict():
 
 
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=True)
