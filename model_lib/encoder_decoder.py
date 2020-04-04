@@ -8,7 +8,7 @@ from .utility_functions import target_text_encoder
 
 from keras.layers import Input, Dense, LSTM
 from keras.models import Model, load_model
-from keras.callbacks.callbacks import EarlyStopping, ReduceLROnPlateau
+from keras.callbacks import EarlyStopping, ReduceLROnPlateau
 
 
 class lstm_models():

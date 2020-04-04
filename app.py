@@ -9,7 +9,8 @@ from model_lib.videocapture import predict_from_camera
 
 from flask import Flask, jsonify
 
-
+import keras.backend.tensorflow_backend as tb
+tb._SYMBOLIC_SCOPE.value = True
 
 # instantiate flask
 app = Flask(__name__)
@@ -47,6 +48,7 @@ def select_feature_extraction_model():
     labels_path = config.labels_path
     nTargetFrames = config.nTargetFrames
     latent_dim = config.latent_dim
+
 
     # build encoder - decoder model
     model = lstm_models(labels_path, model_params, nTargetFrames,
@@ -87,3 +89,4 @@ def predict():
 
 if __name__ == "__main__":
     app.run(debug=True)
+    
