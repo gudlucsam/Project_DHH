@@ -7,7 +7,7 @@ from model_lib.utility_functions import target_text_encoder, process_videos
 from model_lib.encoder_decoder import lstm_models
 from model_lib.videocapture import predict_from_camera
 
-from flask import Flask, jsonify
+from flask import Flask, jsonify, make_response
 
 import keras.backend.tensorflow_backend as tb
 tb._SYMBOLIC_SCOPE.value = True
@@ -82,8 +82,9 @@ def train_model():
 def predict():
     return None
 
-
-
+@app.errorhandler(404)
+def not_found(error):
+    return make_response(jsonify({'error': 'Not found'}), 404)
 
 if __name__ == "__main__":
     print("LOADING DEFAULT MODEL....")
