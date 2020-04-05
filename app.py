@@ -14,20 +14,22 @@ tb._SYMBOLIC_SCOPE.value = True
 
 # instantiate flask
 app = Flask(__name__)
-
+# keras model
 model = None
 
 
-
-@app.route("/")
+@app.route("/ml/api/v1.0/info")
 def index():
-    return "Hello Word"
+    return jsonify({
+        "project_name":"Undergraduate Capstone Project",
+        "model_name":"dhh-asl-api-v1.0",
+        "version":"v1.0",
+        "author":"Samuel Atule",
+        "email":"atulesamuel20@gmail.com"
+    })
 
-@app.route("/select_model", methods=['GET'])
-def select_feature_extraction_model():
-
-    # retrieve payload
-    payload = None
+@app.route("/ml/api/v1.0/md/<int:model_id>", methods=['GET'])
+def select_feature_extraction_model(model_id):
 
     # init response
     res = {"success": False}
@@ -35,32 +37,28 @@ def select_feature_extraction_model():
     # make model instance global
     global model
 
-    # select cnn model to use
-    if payload == "inception":
-        model_params = config.inception_model_params
+    # select inception if model_id is 0 else mobilenet
+    if model_id == 0:
+        config.params["cnn_model_params"] = config.inception_model_params
+        config.params["nFeatureLength"] = config.inception_model_params["output_shape"]
+        config.params["saved_model_path"] = config.inception_model_params["saved_model_path"]
+    elif model_id == 1:
+        config.params["cnn_model_params"] = config.mobilenet_model_params
+        config.params["nFeatureLength"] = config.mobilenet_model_params["output_shape"]
+        config.params["saved_model_path"] = config.mobilenet_model_params["saved_model_path"]
     else:
-        model_params = config.mobilenet_model_params
-
-    # retrieve model params
-    nFeatureLength = model_params["output_shape"][0]
-    saved_model_path = model_params["saved_model_path"]
-
-    labels_path = config.labels_path
-    nTargetFrames = config.nTargetFrames
-    latent_dim = config.latent_dim
-
+        return jsonify(res)
 
     # build encoder - decoder model
-    model = lstm_models(labels_path, model_params, nTargetFrames,
-                            nFeatureLength, latent_dim=latent_dim,
-                            saved_model_path=saved_model_path)
+    model = lstm_models(**config.params)
+
     # return success
     res["success"] = True
 
     return jsonify(res)
 
 
-@app.route("/train", methods = ['GET', 'POST'])
+@app.route("/ml/api/v1.0/train", methods = ['GET', 'POST'])
 def train_model():
     global model
 
@@ -80,7 +78,7 @@ def train_model():
     return jsonify(res)
 
 
-@app.route("/predict", methods=['GET', 'POST'])
+@app.route("/ml/api/v1.0/predict", methods=['GET', 'POST'])
 def predict():
     return None
 
@@ -88,5 +86,7 @@ def predict():
 
 
 if __name__ == "__main__":
+    print("LOADING DEFAULT MODEL....")
+    model = lstm_models(**config.params)
     app.run(debug=True)
     

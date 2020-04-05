@@ -5,6 +5,7 @@ inception_model_params = {
     "output_shape": (2048, ),
     "saved_model_path": "model_lib/saved_models/inception/dhh.h5"
 }
+
 # mobilenet model parameters
 mobilenet_model_params = {
     "mName" : "mobilenet",
@@ -13,10 +14,17 @@ mobilenet_model_params = {
     "saved_model_path": "model_lib/saved_models/mobilenet/dhh.h5"
 }
 
+params = {
+    "labels_path" : "model_lib/downloaded.csv",
+    "cnn_model_params" : mobilenet_model_params,
+    "nTargetFrames" : 40,
+    "nFeatureLength" : mobilenet_model_params["output_shape"],
+    "latent_dim" : 256,
+    "saved_model_path" : mobilenet_model_params["saved_model_path"]
+}
+
 # videos_path = "dataset"
 videos_path = "model_lib/downloaded"
-labels_path = "model_lib/downloaded.csv"
 
-nTargetFrames = 40
-latent_dim = 256
+
 nResizeMinDim = 300
