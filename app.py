@@ -11,14 +11,11 @@ from model_lib.camera import VideoCamera
 
 from flask import Flask, jsonify, make_response, Response
 
-import keras.backend.tensorflow_backend as tb
-tb._SYMBOLIC_SCOPE.value = True
-
 # instantiate flask
 app = Flask(__name__)
 # keras model
 model = None
-graph = None
+# frames list
 liFrames = []
 
 @app.route("/ml/api/v1.0/info")
@@ -64,7 +61,6 @@ def select_feature_extraction_model(model_id):
 @app.route("/ml/api/v1.0/md/tn", methods = ['GET', 'POST'])
 def train_model():
     global model
-    global graph
 
     # init response
     res = {"success": False}
@@ -75,7 +71,6 @@ def train_model():
 
     # train model
     model.train(videos_path, nResizeMinDim)
-    # graph = model.graph
 
     # return success
     res["success"] = True
@@ -111,7 +106,6 @@ def video_feed():
 def predict():
     global model
     global liFrames
-    global graph
 
     # init response
     res = {
@@ -128,7 +122,6 @@ def predict():
     video_frames = images_normalize(liFrames, nTargetFrames, nHeight, nWidth)
 
     # predict from live feeds
-    # with model.graph.as_default():
     prediction = model.predict([video_frames])
     
     # check if prediction successful otherwise return unsuccessful
