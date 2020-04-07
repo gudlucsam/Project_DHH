@@ -14,6 +14,7 @@ mobilenet_model_params = {
     "saved_model_path": "model_lib/saved_models/mobilenet/dhh.h5"
 }
 
+# default model to load
 params = {
     "labels_path" : "model_lib/downloaded.csv",
     "cnn_model_params" : mobilenet_model_params,
@@ -25,6 +26,4 @@ params = {
 
 # videos_path = "dataset"
 videos_path = "model_lib/downloaded"
-
-
 nResizeMinDim = 300

@@ -35,7 +35,7 @@ def video_start(device = 0, tuResolution =(320, 300), nFramePerSecond = 30):
 
 	return oStream
 
-def video_capture(oStream, tuRectangle = (320, 300), nTimeDuration =4 ):
+def video_capture(oStream, tuRectangle = (320, 300), nTimeDuration = 4 ):
 	liFrames = []
 	fTimeStart = time.time()
 
@@ -83,6 +83,7 @@ def predict_from_camera(trained_model, nTargetFrames, nHeight, nWidth, bRescale=
 		# process frames
 		video_frames = images_normalize(video_frames, nTargetFrames, nHeight, nWidth, bRescale=bRescale)
 		# predict from live feeds
+		predict("fffffffffffffffffffff",video_frames)
 		prediction = trained_model.predict([video_frames])
 
 		# print outcome

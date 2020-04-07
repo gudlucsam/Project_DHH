@@ -1,6 +1,7 @@
 import os
 import keras
 import numpy as np
+import tensorflow as tf
 
 from .feature_extraction import features_generator
 from .cnn_model import features_2D_model
@@ -77,6 +78,7 @@ class lstm_models():
 
   def construct_prediction_model(self):
     model = load_model(self.saved_model_path)
+    self.graph = tf.get_default_graph()
 
     encoder_inputs = model.input[0]   # input_1
     _, state_h_enc, state_c_enc = model.layers[2].output   # lstm_1
