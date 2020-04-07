@@ -1,5 +1,6 @@
 import keras
-
+import tensorflow as tf
+from keras import backend as K
 
 from keras.applications.mobilenet import MobileNet
 from keras.applications.inception_v3 import InceptionV3
@@ -19,7 +20,10 @@ def features_2D_model(mName="mobilenet", input_shape=(224, 224, 3), output_shape
 
     return Keras CNN Model
     """
-    
+    sess = tf.compat.v1.Session()
+    graph = tf.compat.v1.get_default_graph()
+    K.set_session(sess)
+
     # load pretrained keras models
     if mName == "mobilenet":
         print("Loading MobileNet for feature  extraction...")
@@ -62,4 +66,4 @@ def features_2D_model(mName="mobilenet", input_shape=(224, 224, 3), output_shape
     if tuOutputShape != output_shape:
         raise ValueError("Unexpected output shape")
 
-    return keModel
+    return keModel, sess, graph

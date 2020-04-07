@@ -75,7 +75,7 @@ def train_model():
 
     # train model
     model.train(videos_path, nResizeMinDim)
-    graph = model.graph
+    # graph = model.graph
 
     # return success
     res["success"] = True
@@ -126,12 +126,10 @@ def predict():
     # process frames
     liFrames = np.array(liFrames)
     video_frames = images_normalize(liFrames, nTargetFrames, nHeight, nWidth)
-    print("xxxxxxxxxxxxxxxxxxx", video_frames.shape)
-    print("....rrrrrrrrrrrrrrrrr", video_frames)
 
     # predict from live feeds
-    with graph.as_default():
-        prediction = model.predict([video_frames])
+    # with model.graph.as_default():
+    prediction = model.predict([video_frames])
     
     # check if prediction successful otherwise return unsuccessful
     if not prediction:

@@ -83,7 +83,6 @@ def predict_from_camera(trained_model, nTargetFrames, nHeight, nWidth, bRescale=
 		# process frames
 		video_frames = images_normalize(video_frames, nTargetFrames, nHeight, nWidth, bRescale=bRescale)
 		# predict from live feeds
-		predict("fffffffffffffffffffff",video_frames)
 		prediction = trained_model.predict([video_frames])
 
 		# print outcome

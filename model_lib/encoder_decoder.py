@@ -2,6 +2,7 @@ import os
 import keras
 import numpy as np
 import tensorflow as tf
+from keras import backend as K
 
 from .feature_extraction import features_generator
 from .cnn_model import features_2D_model
@@ -45,8 +46,10 @@ class lstm_models():
     self.decoder_input_data, \
     self.decoder_target_data = target_text_encoder(labels_path)
 
+    self.m_sess = None
+
     # build CNN for feature extraction
-    self.feature_extraction_model = features_2D_model(
+    self.feature_extraction_model, self.csess, self.cgraph = features_2D_model(
             cnn_model_params["mName"],
             cnn_model_params["input_shape"],
             cnn_model_params["output_shape"])
@@ -77,8 +80,11 @@ class lstm_models():
 
 
   def construct_prediction_model(self):
+    self.m_sess = tf.compat.v1.Session()
+    self.m_graph = tf.compat.v1.get_default_graph()
+    K.set_session(self.m_sess)
+
     model = load_model(self.saved_model_path)
-    self.graph = tf.get_default_graph()
 
     encoder_inputs = model.input[0]   # input_1
     _, state_h_enc, state_c_enc = model.layers[2].output   # lstm_1
@@ -105,8 +111,10 @@ class lstm_models():
     # convert (40, 1024) to (1, 40, 1024)
     frames_features_sequence = np.expand_dims(frames_features_sequence, axis=0)
     
-    # encode the input frames feature sequence to get the internal state vectors.
-    states_value = self.encoder_model.predict(frames_features_sequence)
+    with self.m_graph.as_default():
+      K.set_session(self.m_sess)
+      # encode the input frames feature sequence to get the internal state vectors.
+      states_value = self.encoder_model.predict(frames_features_sequence)
       
     # generate empty target sequence of length 1 with only the start character
     target_seq = np.zeros((1, 1, self.num_decoder_tokens))
@@ -116,7 +124,9 @@ class lstm_models():
     stop_condition = False
     decoded_sentence = ''
     while not stop_condition:
-      output_tokens, h, c = self.decoder_model.predict([target_seq] + states_value)
+      with self.m_graph.as_default():
+        K.set_session(self.m_sess)
+        output_tokens, h, c = self.decoder_model.predict([target_seq] + states_value)
         
       # sample a token and add the corresponding character to the decoded sequence
       sampled_token_index = np.argmax(output_tokens[0, -1, :])
@@ -191,10 +201,11 @@ class lstm_models():
     sentences = []
     for sequence in frames_sequence:
       # extract features from cnn model
-      feature_frames = self.feature_extraction_model.predict(sequence)
+      with self.cgraph.as_default():
+        K.set_session(self.csess)
+        feature_frames = self.feature_extraction_model.predict(sequence)
       # predict using features
       predicted_sentence= self.decode_frame_sequence(feature_frames)
       sentences.append(predicted_sentence)
-      # print(predicted_sentence)
 
     return sentences
