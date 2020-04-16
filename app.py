@@ -8,16 +8,19 @@ from model_lib.encoder_decoder import lstm_models
 from model_lib.videocapture import predict_from_camera
 from model_lib.camera import VideoCamera
 
+from flask_cors import CORS
 from flask import Flask, jsonify, make_response, Response, request
 
 
 
 # instantiate flask
 app = Flask(__name__)
+cors = CORS(app, resources={r"/ml/api/v1.0/*": {"origins": 'http://localhost:4200'}})
 # keras model
 model = None
 # frames list
 liFrames = []
+status = True
 
 @app.route("/ml/api/v1.0/info")
 def index():
@@ -101,31 +104,35 @@ def predict():
 
 def gen(camera, nTimeDuration = 4):
     global liFrames
-    fTimeStart = time.time()
+    global status
+    # fTimeStart = time.time()
 
     liFrames = []
-    while True:
+    while status != False:
         # stop after nTimeDuration sec
-        fTimeElapsed = time.time() - fTimeStart
-        if fTimeElapsed > nTimeDuration: break
+        # fTimeElapsed = time.time() - fTimeStart
+        # if fTimeElapsed > nTimeDuration: break
         # capsture frames
         frame, img = camera.get_frame()
         # append images for prediction
         liFrames.append(img)
 
         # yield image bytes to stream to web
-        yield (b'--frame\r\n'
-               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
+        yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
 
 
 @app.route('/ml/api/v1.0/md/vf', methods=["POST"])
 def video_feed():
-    
+    global status
+
     if request.method == "POST":
         payload = request.get_json("status").get("status", None)
         if payload == True:
+            status = True
             return Response(gen(VideoCamera()), mimetype='multipart/x-mixed-replace; boundary=frame')
         elif payload == False:
+            status = False
+            Response(gen(VideoCamera()), mimetype='multipart/x-mixed-replace; boundary=frame')
             return predict()
         else:
             return jsonify({

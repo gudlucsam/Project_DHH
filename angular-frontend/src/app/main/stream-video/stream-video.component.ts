@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { ApiService } from '../../api.service';
 
 @Component({
   selector: 'app-stream-video',
@@ -7,9 +8,16 @@ import { Component, OnInit } from '@angular/core';
 })
 export class StreamVideoComponent implements OnInit {
 
-  constructor() { }
+  infoApi = '';
+  constructor(private apiService: ApiService) { }
 
   ngOnInit(): void {
+    this.apiService.getApiInfo().subscribe(
+      data => {
+        console.log("data: ", data);
+      },
+      error => console.log("error: ", error)
+    )
   }
 
 }
