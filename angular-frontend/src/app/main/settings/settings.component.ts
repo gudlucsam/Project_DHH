@@ -21,9 +21,11 @@ export class SettingsComponent implements OnInit {
   startStreaming() {
     this.apiService.startVideoStreaming().subscribe(
       data => {
-        this.image = data;
-        let objectURL = 'data:image/png;base64,' + data;
+        // console.log(data.)
+        // this.image = data;
+        let objectURL = 'data:image/jpeg;base64,' + data;
         this.image = this.sanitizer.bypassSecurityTrustUrl(objectURL);
+        console.log("ddddddddddddddddddddddddddd: ", this.image)
       },
       error => {
         console.log("errffffffffffffffffffffor: ", error)

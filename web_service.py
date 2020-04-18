@@ -105,13 +105,13 @@ def predict():
 def gen(camera, nTimeDuration = 4):
     global liFrames
     global status
-    # fTimeStart = time.time()
+    fTimeStart = time.time()
 
     liFrames = []
     while status != False:
         # stop after nTimeDuration sec
-        # fTimeElapsed = time.time() - fTimeStart
-        # if fTimeElapsed > nTimeDuration: break
+        fTimeElapsed = time.time() - fTimeStart
+        if fTimeElapsed > nTimeDuration: break
         # capsture frames
         frame, img = camera.get_frame()
         # append images for prediction
@@ -132,7 +132,7 @@ def video_feed():
             return Response(gen(VideoCamera()), mimetype='multipart/x-mixed-replace; boundary=frame')
         elif payload == False:
             status = False
-            Response(gen(VideoCamera()), mimetype='multipart/x-mixed-replace; boundary=frame')
+            # Response(gen(VideoCamera()), mimetype='multipart/x-mixed-replace; boundary=frame')
             return predict()
         else:
             return jsonify({
@@ -154,5 +154,5 @@ if __name__ == "__main__":
     model.train(videos_path, nResizeMinDim)
 
     # start app engine
-    app.run(debug=True)
+    app.run(debug=True, threaded = True)
     

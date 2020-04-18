@@ -12,12 +12,14 @@ export class StreamVideoComponent implements OnInit {
   constructor(private apiService: ApiService) { }
 
   ngOnInit(): void {
+
     this.apiService.getApiInfo().subscribe(
       data => {
         console.log("data: ", data);
       },
       error => console.log("error: ", error)
     )
+    
   }
 
 }
