@@ -17,6 +17,7 @@ from flask import Flask, jsonify, make_response, Response, request, render_templ
 
 
 
+# GLOBAL VARS
 
 # instantiate flask
 app = Flask(__name__)
@@ -24,25 +25,34 @@ app = Flask(__name__)
 model = None
 # frames list
 liFrames = []
-status = True
+
+# retrieve params from config
+nTargetFrames = config.params["nTargetFrames"]
+nHeight, nWidth, _ = config.params["cnn_model_params"]["input_shape"]
+
+
 
 @app.route('/')
 def index():
     select_form_vals = [(0, "Mobilenet(Recommended for slow device)"), (1, "InceptionV3")]
-    default = 0
-    if request.args.get("default_val"):
-        default = request.args.get("default_val")
-    return render_template('index.html', default_val=default, form_vals=select_form_vals)
+    mode = 0
+    prediction = ""
+    if request.args.get("mode"):
+        mode = request.args.get("mode")
+
+    if request.args.get("prediction"):
+        prediction = request.args.get("prediction")
+
+    return render_template('index.html', mode=mode, form_vals=select_form_vals, prediction=prediction)
 
 
 @app.route("/model", methods=['POST'])
 def select_feature_extraction_model():
-
     # make model instance global
     global model
 
     if request.method == 'POST':
-        default = 0
+        mode = 0
         model_id = int(request.form.get("selectmodel"))
 
         # select inception if model_id is 0 else mobilenet
@@ -51,18 +61,18 @@ def select_feature_extraction_model():
             config.params["nFeatureLength"] = config.mobilenet_model_params["output_shape"]
             config.params["saved_model_path"] = config.mobilenet_model_params["saved_model_path"]
             #  select chosen option
-            default = 0
+            mode = 0
 
         elif model_id == 1:
             config.params["cnn_model_params"] = config.inception_model_params
             config.params["nFeatureLength"] = config.inception_model_params["output_shape"]
             config.params["saved_model_path"] = config.inception_model_params["saved_model_path"]
             #  select chosen option
-            default = 1
+            mode = 1
 
         else:
-            default = 0
-            return redirect( url_for('index', default_val=default))
+            mode = 0
+            return redirect( url_for('index', mode=mode))
 
         # build encoder - decoder model
         model = lstm_models(**config.params)
@@ -74,36 +84,41 @@ def select_feature_extraction_model():
         # train or load model
         model.train(videos_path, nResizeMinDim)
 
-        return redirect( url_for('index', default_val=default))
+        return redirect( url_for('index', mode=mode) )
 
 
+@app.route('/predict', methods=["GET", "POST"])
 def predict():
-    global model
+    if request.method == "POST":
+        global model
+        global liFrames
+
+        # retrieve params from config
+        global nTargetFrames
+        global nHeight, nWidth
+
+        # process frames
+        liFrames = np.array(liFrames)
+        print("jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj", liFrames.shape)
+        video_frames = images_normalize(liFrames, nTargetFrames, nHeight, nWidth)
+
+        # predict from live feeds
+        prediction = model.predict([video_frames])
+
+        # reset list
+        liFrames = []
+
+        return redirect( url_for('index', prediction=prediction) )
+
+    else:
+        return redirect( url_for('index') )
+
+
+def gen(camera):
     global liFrames
-
-    # retrieve params from config
-    nTargetFrames = config.params["nTargetFrames"]
-    nHeight, nWidth, _ = config.params["cnn_model_params"]["input_shape"]
-
-    # process frames
-    liFrames = np.array(liFrames)
-    video_frames = images_normalize(liFrames, nTargetFrames, nHeight, nWidth)
-
-    # predict from live feeds
-    prediction = model.predict([video_frames])
-
-    return prediction
-
-
-def gen(camera, nTimeDuration = 4):
-    global liFrames
-    # fTimeStart = time.time()
 
     liFrames = []
     while True:
-        # stop after nTimeDuration sec
-        # fTimeElapsed = time.time() - fTimeStart
-        # if fTimeElapsed > nTimeDuration: break
         # capsture frames
         frame, img = camera.get_frame()
         # append images for prediction
@@ -113,9 +128,15 @@ def gen(camera, nTimeDuration = 4):
         yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
 
 
-@app.route('/ml/api/v1.0/md/vf')
+@app.route('/video_feed', methods=["GET", "POST"])
 def video_feed():
-    return Response(gen(VideoCamera()), mimetype='multipart/x-mixed-replace; boundary=frame')
+    global liFrames
+    if request.method == 'POST':
+        liFrames = []
+        return redirect(url_for('index'))
+    else:
+        return Response(gen(VideoCamera()), mimetype='multipart/x-mixed-replace; boundary=frame')
+
 
 
 @app.errorhandler(404)
