@@ -18,14 +18,10 @@ from flask import Flask, jsonify, make_response, Response, request, render_templ
 
 
 # GLOBAL VARS
-
-# instantiate flask
 app = Flask(__name__)
-# keras model
 model = None
-# frames list
 liFrames = []
-
+mode = 0
 # retrieve params from config
 nTargetFrames = config.params["nTargetFrames"]
 nHeight, nWidth, _ = config.params["cnn_model_params"]["input_shape"]
@@ -92,14 +88,12 @@ def predict():
     if request.method == "POST":
         global model
         global liFrames
-
         # retrieve params from config
         global nTargetFrames
         global nHeight, nWidth
 
         # process frames
         liFrames = np.array(liFrames)
-        print("jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj", liFrames.shape)
         video_frames = images_normalize(liFrames, nTargetFrames, nHeight, nWidth)
 
         # predict from live feeds
@@ -107,16 +101,13 @@ def predict():
 
         # reset list
         liFrames = []
-
         return redirect( url_for('index', prediction=prediction) )
-
     else:
         return redirect( url_for('index') )
 
 
 def gen(camera):
     global liFrames
-
     liFrames = []
     while True:
         # capsture frames
@@ -131,9 +122,10 @@ def gen(camera):
 @app.route('/video_feed', methods=["GET", "POST"])
 def video_feed():
     global liFrames
+    global mode
     if request.method == 'POST':
         liFrames = []
-        return redirect(url_for('index'))
+        return redirect(url_for('index', mode=mode))
     else:
         return Response(gen(VideoCamera()), mimetype='multipart/x-mixed-replace; boundary=frame')
 
