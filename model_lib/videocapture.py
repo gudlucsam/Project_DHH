@@ -35,7 +35,7 @@ def video_start(device = 0, tuResolution =(320, 300), nFramePerSecond = 30):
 
 	return oStream
 
-def video_capture(oStream, tuRectangle = (320, 300), nTimeDuration =4 ):
+def video_capture(oStream, tuRectangle = (320, 300), nTimeDuration = 4 ):
 	liFrames = []
 	fTimeStart = time.time()
 
