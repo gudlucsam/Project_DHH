@@ -56,13 +56,18 @@
           <!-- stop button -->
           <button type="button" class="btn btn-secondary btn-lg btn-block">Translate</button>
           <br>
+          <!-- <h1>{{default_val}}</h1> -->
           <!--  model selection-->
           <p class="font-weight-bold text-center">Change Model Used:</p>
           <form action="{{ url_for('select_feature_extraction_model') }}" method="post">
             <div class="form-group">
               <select onchange="this.form.submit()" class="form-control" name="selectmodel"  id="mChangeForm" >
                 {% for key, val in form_vals %}
-                  <option value="{{ key }}" {% if key == default %} selected {% endif %}>{{ val }}</option>
+                  <option value="{{ key }}" 
+                    {% if key == default_val %}
+                      selected
+                    {% endif %}
+                    >{{ val }}</option>
                 {% endfor %}
               </select>
             </div>

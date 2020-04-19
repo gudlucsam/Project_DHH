@@ -30,9 +30,9 @@ status = True
 def index():
     select_form_vals = [(0, "Mobilenet(Recommended for slow device)"), (1, "InceptionV3")]
     default = 0
-    if request.args.get("default"):
-        default = request.args.get("default")
-    return render_template('index.html', form_vals=select_form_vals, default = default)
+    if request.args.get("default_val"):
+        default = request.args.get("default_val")
+    return render_template('index.html', default_val=default, form_vals=select_form_vals)
 
 
 @app.route("/model", methods=['POST'])
@@ -62,7 +62,7 @@ def select_feature_extraction_model():
 
         else:
             default = 0
-            return redirect( url_for('index', default=default))
+            return redirect( url_for('index', default_val=default))
 
         # build encoder - decoder model
         model = lstm_models(**config.params)
@@ -74,7 +74,7 @@ def select_feature_extraction_model():
         # train or load model
         model.train(videos_path, nResizeMinDim)
 
-        return redirect( url_for('index', default=default))
+        return redirect( url_for('index', default_val=default))
 
 
 def predict():
