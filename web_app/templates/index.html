@@ -14,8 +14,7 @@
     <style>
       body, html { 
         /* background: #c0c7d1 !important;  */
-        height:100vh;
-        }
+        height:100vh; }
     </style>
   </head>
   <body>
@@ -24,15 +23,15 @@
     <div class="container" style="background: #c0c7d1; height: 100vh;">
 
       <!-- Nav bar -->
-      <nav class="navbar navbar-expand-lg navbar-light" style="background-color: hsl(215, 77%, 29%); color:whitesmoke">
-        <a class="navbar-brand" href="{{ url_for('index') }}" style="color:whitesmoke;">Sign Language Translator</a>
+      <nav class="navbar navbar-expand-lg navbar-light" style="background-color: #c0c7d1;">
+        <a class="navbar-brand" href="{{ url_for('index') }}">Sign Language Translator</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav">
             <li class="nav-item active">
-              <a class="nav-link" href="https://github.com/gudlucsam/Project_DNN" style="color:whitesmoke;">documentation <span class="sr-only">(current)</span></a>
+              <a class="nav-link" href="https://github.com/gudlucsam/Project_DNN">documentation <span class="sr-only">(current)</span></a>
             </li>
           </ul>
         </div>
@@ -46,23 +45,18 @@
 
           <!-- display translation here -->
           {% if prediction != '' %}
-            <p> <span class="font-weight-bold mt-3">Translation: </span>{{ prediction }}</p>
+            <p class="font-weight-bold mt-3">Translation: {{ prediction }}</p>
           {% endif %}
         </div>
     
         <div class="col-md-4">
           <!-- start button -->
-          <form action="{{ url_for('video_feed') }}" method="post">
-            <button type="submit" class="btn btn-primary btn-lg btn-block">Start</button>
-          </form>
+          <button type="button" class="btn btn-primary btn-lg btn-block">Start</button>
           <br>
-          
           <!-- stop button -->
-          <form action="{{ url_for('predict') }}" method="post">
-            <button type="submit" class="btn btn-secondary btn-lg btn-block">Translate</button>
-          </form>
+          <button type="button" class="btn btn-secondary btn-lg btn-block">Translate</button>
           <br>
-
+          <!-- <h1>{{default_val}}</h1> -->
           <!--  model selection-->
           <p class="font-weight-bold text-center">Change Model Used:</p>
           <form action="{{ url_for('select_feature_extraction_model') }}" method="post">
@@ -70,7 +64,7 @@
               <select onchange="this.form.submit()" class="form-control" name="selectmodel"  id="mChangeForm" >
                 {% for key, val in form_vals %}
                   <option value="{{ key }}" 
-                    {% if mode %}
+                    {% if key == default_val %}
                       selected
                     {% endif %}
                     >{{ val }}</option>
