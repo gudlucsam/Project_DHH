@@ -3,20 +3,24 @@ import time
 import numpy as np
 
 from model_lib import config
-
 from model_lib.utility_functions import target_text_encoder, process_videos, images_normalize
 from model_lib.encoder_decoder import lstm_models
 from model_lib.videocapture import predict_from_camera
 from model_lib.camera import VideoCamera
 
-from flask import Flask, jsonify, make_response, Response
+from flask_cors import CORS
+from flask import Flask, jsonify, make_response, Response, request
+
+
 
 # instantiate flask
 app = Flask(__name__)
+cors = CORS(app, resources={r"/ml/api/v1.0/*": {"origins": 'http://localhost:4200'}})
 # keras model
 model = None
 # frames list
 liFrames = []
+status = True
 
 @app.route("/ml/api/v1.0/info")
 def index():
@@ -27,6 +31,7 @@ def index():
         "author":"Samuel Atule",
         "email":"atulesamuel20@gmail.com"
     })
+
 
 @app.route("/ml/api/v1.0/md/<int:model_id>", methods=['GET'])
 def select_feature_extraction_model(model_id):
@@ -52,24 +57,11 @@ def select_feature_extraction_model(model_id):
     # build encoder - decoder model
     model = lstm_models(**config.params)
 
-    # return success
-    res["success"] = True
-
-    return jsonify(res)
-
-
-@app.route("/ml/api/v1.0/md/tn", methods = ['GET', 'POST'])
-def train_model():
-    global model
-
-    # init response
-    res = {"success": False}
-
     # retrieve param
     videos_path = config.videos_path
     nResizeMinDim = config.nResizeMinDim
 
-    # train model
+    # train or load model
     model.train(videos_path, nResizeMinDim)
 
     # return success
@@ -77,32 +69,7 @@ def train_model():
 
     return jsonify(res)
 
-def gen(camera, nTimeDuration = 4):
-    global liFrames
-    fTimeStart = time.time()
 
-    liFrames = []
-    while True:
-        # stop after nTimeDuration sec
-        fTimeElapsed = time.time() - fTimeStart
-        if fTimeElapsed > nTimeDuration: break
-        # capsture frames
-        frame, img = camera.get_frame()
-        # append images for prediction
-        liFrames.append(img)
-
-        # yield image bytes to stream to web
-        yield (b'--frame\r\n'
-               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
-
-
-@app.route('/ml/api/v1.0/md/vf')
-def video_feed():
-    return Response(gen(VideoCamera()),
-                    mimetype='multipart/x-mixed-replace; boundary=frame')
-
-
-@app.route("/ml/api/v1.0/md/pd")
 def predict():
     global model
     global liFrames
@@ -135,6 +102,44 @@ def predict():
     return jsonify(res)
 
 
+def gen(camera, nTimeDuration = 4):
+    global liFrames
+    global status
+    fTimeStart = time.time()
+
+    liFrames = []
+    while status != False:
+        # stop after nTimeDuration sec
+        fTimeElapsed = time.time() - fTimeStart
+        if fTimeElapsed > nTimeDuration: break
+        # capsture frames
+        frame, img = camera.get_frame()
+        # append images for prediction
+        liFrames.append(img)
+
+        # yield image bytes to stream to web
+        yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
+
+
+@app.route('/ml/api/v1.0/md/vf', methods=["POST"])
+def video_feed():
+    global status
+
+    if request.method == "POST":
+        payload = request.get_json("status").get("status", None)
+        if payload == True:
+            status = True
+            return Response(gen(VideoCamera()), mimetype='multipart/x-mixed-replace; boundary=frame')
+        elif payload == False:
+            status = False
+            # Response(gen(VideoCamera()), mimetype='multipart/x-mixed-replace; boundary=frame')
+            return predict()
+        else:
+            return jsonify({
+                "error": " Cannot reach camera",
+            })
+
+
 @app.errorhandler(404)
 def not_found(error):
     return make_response(jsonify({'error': 'Not found'}), 404)
@@ -142,5 +147,12 @@ def not_found(error):
 if __name__ == "__main__":
     print("LOADING DEFAULT MODEL....")
     model = lstm_models(**config.params)
-    app.run(debug=True)
+    # retrieve param
+    videos_path = config.videos_path
+    nResizeMinDim = config.nResizeMinDim
+    # train or load model
+    model.train(videos_path, nResizeMinDim)
+
+    # start app engine
+    app.run(debug=True, threaded = True)
     
