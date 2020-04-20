@@ -182,7 +182,7 @@ class lstm_models():
       # create dir if not exists
       print("Saving model....")
       if not os.path.exists(self.saved_model_path):
-        os.makedirs("/".join(self.saved_model_path.split("/")[:-1]), exist_ok=True)
+        os.makedirs("/".join(self.saved_model_path.split("\\")[:-1]), exist_ok=True)
 
       # save model
       model.save(self.saved_model_path)

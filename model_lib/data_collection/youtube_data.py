@@ -10,6 +10,12 @@ from pyyoutube import Api
 api = Api(api_key='AIzaSyAUdxEy_nslLj9mTdOVKj5diUvs9OKtQsU')
 
 def get_video_ids(playlist_id):
+    """Retrieves individual video id from a playlist
+
+    params:
+        playlist_id: youtube playlist id
+    """
+
     video_ids = []
     playlist_item_by_playlist  = api.get_playlist_items(playlist_id=playlist_id, count=None)
     for item in playlist_item_by_playlist.items:
@@ -18,6 +24,13 @@ def get_video_ids(playlist_id):
     return video_ids
 
 def get_transcripts_data_as_json(playlist_id, folder_name):
+    """Retrieves transcripts of individual youtube videos from playlist
+    and writes to json files.
+
+    params:
+        playlist_id: youtube videos playlist id
+        folder_name: path to write transcripts json
+    """
     transcripts, unretrieved_videos  = YouTubeTranscriptApi.get_transcripts(video_ids, languages=['en'], continue_after_error=True)
 
     for key, transcript in transcripts.items():

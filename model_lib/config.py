@@ -16,14 +16,14 @@ mobilenet_model_params = {
 
 # default model to load
 params = {
-    "labels_path" : 'C:\\Users\\atule\\Desktop\\Project_DNN\\model_lib\\downloaded.csv',
+    "labels_path" : "C:\\Users\\atule\\Desktop\\Project_DNN\\model_lib\\downloaded.csv",
     "cnn_model_params" : mobilenet_model_params,
     "nTargetFrames" : 40,
-    "nFeatureLength" : mobilenet_model_params["output_shape"],
+    "nFeatureLength" : mobilenet_model_params["output_shape"][0],
     "latent_dim" : 256,
     "saved_model_path" : mobilenet_model_params["saved_model_path"]
 }
 
 # videos_path = "dataset"
-videos_path = "model_lib/downloaded"
+videos_path = "C:\\Users\\atule\\Desktop\\Project_DNN\\model_lib\\downloaded"
 nResizeMinDim = 300

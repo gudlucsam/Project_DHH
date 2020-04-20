@@ -54,14 +54,14 @@ def select_feature_extraction_model():
         # select inception if model_id is 0 else mobilenet
         if model_id == 0:
             config.params["cnn_model_params"] = config.mobilenet_model_params
-            config.params["nFeatureLength"] = config.mobilenet_model_params["output_shape"]
+            config.params["nFeatureLength"] = config.mobilenet_model_params["output_shape"][0]
             config.params["saved_model_path"] = config.mobilenet_model_params["saved_model_path"]
             #  select chosen option
             mode = 0
 
         elif model_id == 1:
             config.params["cnn_model_params"] = config.inception_model_params
-            config.params["nFeatureLength"] = config.inception_model_params["output_shape"]
+            config.params["nFeatureLength"] = config.inception_model_params["output_shape"][0]
             config.params["saved_model_path"] = config.inception_model_params["saved_model_path"]
             #  select chosen option
             mode = 1
