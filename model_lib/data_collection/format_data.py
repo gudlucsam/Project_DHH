@@ -55,6 +55,7 @@ if __name__ == "__main__":
     # sub_folders = ["processed_data/downloaded/", "processed_data/goals/",
     #                 "processed_data/holiday/", "processed_data/school/",
     #                 "processed_data/summer/", "processed_data/vocab/"]
+    
     sub_folders = ["processed_data/goals/",
                     "processed_data/holiday/", "processed_data/school/",
                     "processed_data/summer/", "processed_data/vocab/"]

@@ -4,6 +4,8 @@ import numpy as np
 import tensorflow as tf
 from keras import backend as K
 
+from model_lib import config
+
 from .feature_extraction import features_generator
 from .cnn_model import features_2D_model
 from .utility_functions import target_text_encoder
@@ -11,6 +13,11 @@ from .utility_functions import target_text_encoder
 from keras.layers import Input, Dense, LSTM
 from keras.models import Model, load_model
 from keras.callbacks import EarlyStopping, ReduceLROnPlateau
+
+
+
+# get default saved model path
+saved_model_path = config.params["saved_model_path"]
 
 
 class lstm_models():
@@ -28,7 +35,7 @@ class lstm_models():
   """
 
   def __init__(self, labels_path, cnn_model_params, nTargetFrames, nFeatureLength, 
-              latent_dim=256, saved_model_path="saved_models/mobilenet/dnn.h5"):
+              latent_dim=256, saved_model_path=saved_model_path):
     
     
     # dataset stats
@@ -182,10 +189,9 @@ class lstm_models():
       # create dir if not exists
       print("Saving model....")
       if not os.path.exists(self.saved_model_path):
-        os.makedirs("/".join(self.saved_model_path.split("\\")[:-1]), exist_ok=True)
-
-      # save model
-      model.save(self.saved_model_path)
+        os.makedirs('\\'.join(self.saved_model_path.split("\\")[:-1]), exist_ok=True)
+        # save model
+        model.save(self.saved_model_path)
 
       print("Done")
 

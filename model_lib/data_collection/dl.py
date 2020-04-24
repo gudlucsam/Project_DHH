@@ -1,6 +1,5 @@
 from pytube import Playlist
 
-
 def download(playlist_id):
     """Downloads entire videos in youtube video playlists
 

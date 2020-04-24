@@ -4,8 +4,6 @@ import os
 from youtube_transcript_api import YouTubeTranscriptApi
 from pyyoutube import Api
 
-
-
 # create api
 api = Api(api_key='AIzaSyAUdxEy_nslLj9mTdOVKj5diUvs9OKtQsU')
 
