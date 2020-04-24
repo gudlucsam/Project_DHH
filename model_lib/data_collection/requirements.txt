@@ -1,3 +1,4 @@
 python-youtube
-pytube
+pytube3
 moviepy
+youtube-transcript-api

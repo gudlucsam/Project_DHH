@@ -10,7 +10,7 @@ import pandas as pd
 
 
 
-def trim_videos(videos_path, target_data_path, processed_datapath):
+def trim_videos(downloaded_data_path, processed_datapath):
     """Reads both videos and their corresponding transcription
     and trims them using the sentence duration.
 
@@ -18,9 +18,13 @@ def trim_videos(videos_path, target_data_path, processed_datapath):
         videos_path: path to downloaded videos
         target_data_path: path to corresponding transcription in json format
     """
-    # read files
+    # get videos and transcripts paths
+    videos_path = os.path.join(downloaded_data_path, "videos")
+    transcripts_path = os.path.join(downloaded_data_path, "transcripts")
+
+    # read files in order
     videos = sorted(glob.glob(videos_path + "/*.mp4"))
-    json_data = sorted(glob.glob(target_data_path + "/*.json"),
+    json_data = sorted(glob.glob(transcripts_path + "/*.json"),
                          key = lambda x: int(x.split("\\")[-1].split(".")[0]))
 
     # check data is correct
