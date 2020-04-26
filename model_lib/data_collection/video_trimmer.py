@@ -2,6 +2,7 @@ import os
 import glob
 import json
 import csv
+import re
 
 import moviepy
 from moviepy.editor import VideoFileClip
@@ -20,12 +21,12 @@ def trim_videos(downloads_path, dataset_path):
     """
 
     # skip processing if folder already exists
-    if os.path.exists(dataset_path):
-        print("downloaded videos already processed to {0} folder, exiting...".format(dataset_path))
-        return
+    if not os.path.exists(dataset_path):
+        # print("downloaded videos already processed to {0} folder, exiting...".format(dataset_path))
+        # return
 
-    # create folder to store processed clips as dataset
-    os.makedirs(dataset_path)
+        # create folder to store processed clips as dataset
+        os.makedirs(dataset_path)
 
     # base videos and transcripts paths
     videos_path = os.path.join(downloads_path, "videos/")
@@ -33,7 +34,7 @@ def trim_videos(downloads_path, dataset_path):
 
     # open csv file to store procesed target sentences
     target_sentences = os.path.join(dataset_path, "dataset_labels.csv")
-    with open(target_sentences, mode='w', newline='') as f:
+    with open(target_sentences, mode='a', newline='') as f:
         csv_writer = csv.writer(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
         # traverse all sub folders in order
@@ -71,11 +72,12 @@ def trim_videos(downloads_path, dataset_path):
                     # check if file exists
                     if os.path.exists(clip_path):
                         print("clip already created, skipping...", clip_path)
+                        data_point+=1
                         continue
                     
                     # get duration of clip and check if clip is less than 5sec long
                     duration = segment["duration"]
-                    if duration <= 5.0:
+                    if duration <= 7.0:
                         # generate clip
                         text = segment["text"]
                         start = segment["start"]
@@ -84,7 +86,6 @@ def trim_videos(downloads_path, dataset_path):
                             new_clip = my_clip.subclip(start, end)
 
                             # save clip
-                            # print("saving clip {0} to path".format(i))
                             new_clip.write_videofile(clip_path)
                             print([file_name, text])
 
@@ -92,13 +93,11 @@ def trim_videos(downloads_path, dataset_path):
                             text = text.rstrip()
                             text = re.sub('[:,.)(?!;*"-]', "", text.lower())
                             csv_writer.writerow([file_name, text])
-
                             # move to next data point
-                            data_point+=1
+                            data_point+=1 
 
                         except:
                             print("error occured, skipping...")
-                            pass
                     
                 # close instance 
                 my_clip.close()

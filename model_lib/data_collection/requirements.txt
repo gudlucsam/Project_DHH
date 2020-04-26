@@ -1,4 +1,4 @@
 python-youtube
 pytube3
-moviepy
+moviepy==1.0.0
 youtube-transcript-api

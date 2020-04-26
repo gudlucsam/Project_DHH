@@ -92,11 +92,8 @@ ipython_config.py
 #Pipfile.lock
 
 # Youtube Video Collection
-model_lib/data_collection/processed_data/
-model_lib/data_collection/target_data/
-model_lib/data_collection/videos/
-model_lib/downloaded/
-model_lib/dataset/
+model_lib/data_collection/dataset/
+model_lib/data_collection/downloads/
 model_lib/dataset_labels.csv
 
 # PEP 582; used by e.g. github.com/David-OConnor/pyflow

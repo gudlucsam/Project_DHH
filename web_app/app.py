@@ -1,14 +1,12 @@
+import os
+import time
+import sys
+import numpy as np
+
 # get model_lib dir
 model_lib_dir = '\\'.join(os.path.dirname(os.path.abspath(__file__)).split("\\")[:-1])
 # append to system path
 sys.path.append(model_lib_dir)
-
-
-import os
-import time
-import sys
-
-import numpy as np
 
 from model_lib import config
 from model_lib.utility_functions import target_text_encoder, process_videos, images_normalize

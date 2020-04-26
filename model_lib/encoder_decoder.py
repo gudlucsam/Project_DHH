@@ -154,7 +154,7 @@ class lstm_models():
     return decoded_sentence 
 
   def train(self, videos_path, nResizeMinDim):
-    if os.path.exists(self.saved_model_path):
+    if not os.path.exists(self.saved_model_path): # reverse logic
       print("Model already trained and saved to", self.saved_model_path)
       print("Training stopping...")
 
@@ -162,8 +162,7 @@ class lstm_models():
       print("reconstructing models for prediction....")
       self.encoder_model, self.decoder_model = self.construct_prediction_model()
     
-    else:
-       
+    else: 
       # extract features using CNN, and process frames
       encoder_input_data = features_generator(videos_path, self.feature_extraction_model,
                                   nTargetFrames=self.nTargetFrames, nResizeMinDim=nResizeMinDim)
@@ -184,14 +183,15 @@ class lstm_models():
       # train lstm model
       print("Training model....")
       model.fit([encoder_input_data, self.decoder_input_data], self.decoder_target_data,
-                  batch_size=5, epochs=20, validation_split=0.2)
+                  batch_size=16, epochs=200, validation_split=0.2,
+                  callbacks=[reduce_lr, early_stopping])
 
       # create dir if not exists
       print("Saving model....")
-      if not os.path.exists(self.saved_model_path):
-        os.makedirs('\\'.join(self.saved_model_path.split("\\")[:-1]), exist_ok=True)
-        # save model
-        model.save(self.saved_model_path)
+      # if not os.path.exists(self.saved_model_path):
+      #   os.makedirs('\\'.join(self.saved_model_path.split("\\")[:-1]), exist_ok=True)
+      # save model
+      model.save(self.saved_model_path)
 
       print("Done")
 

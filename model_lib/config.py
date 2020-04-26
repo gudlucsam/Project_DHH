@@ -22,7 +22,7 @@ mobilenet_model_params = {
 
 # default model to load
 params = {
-    "labels_path" : '\\'.join([base_dir, "downloaded.csv"]),
+    "labels_path" : '\\'.join([base_dir, "data_collection\\dataset_labels.csv"]),
     "cnn_model_params" : mobilenet_model_params,
     "nTargetFrames" : 40,
     "nFeatureLength" : mobilenet_model_params["output_shape"][0],
@@ -31,5 +31,5 @@ params = {
 }
 
 # videos_path = "dataset"
-videos_path = '\\'.join([base_dir, "downloaded"])
+videos_path = '\\'.join([base_dir, "data_collection\\dataset"])
 nResizeMinDim = 300
