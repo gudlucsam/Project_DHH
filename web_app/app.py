@@ -147,5 +147,5 @@ if __name__ == "__main__":
     model.train(videos_path, nResizeMinDim)
 
     # start app engine
-    app.run(debug=True, threaded = True)
+    app.run(debug=True)
     
