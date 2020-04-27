@@ -154,7 +154,7 @@ class lstm_models():
     return decoded_sentence 
 
   def train(self, videos_path, nResizeMinDim):
-    if os.path.exists(self.saved_model_path): # reverse logic
+    if not os.path.exists(self.saved_model_path): # reverse logic
       print("Model already trained and saved to", self.saved_model_path)
       print("Training stopping...")
 
@@ -183,8 +183,10 @@ class lstm_models():
       # train lstm model
       print("Training model....")
       model.fit([encoder_input_data, self.decoder_input_data], self.decoder_target_data,
-                  batch_size=5, epochs=200, validation_split=0.2,
-                  callbacks=[reduce_lr, early_stopping])
+                  batch_size=5, epochs=100, validation_split=0.2)
+      # model.fit([encoder_input_data, self.decoder_input_data], self.decoder_target_data,
+      #             batch_size=5, epochs=200, validation_split=0.2,
+      #             callbacks=[reduce_lr, early_stopping])
 
       # create dir if not exists
       print("Saving model....")
