@@ -23,11 +23,11 @@ mobilenet_model_params = {
 # default model to load
 params = {
     "labels_path" : '\\'.join([base_dir, "data_collection\\dataset_labels.csv"]),
-    "cnn_model_params" : inception_model_params,
+    "cnn_model_params" : mobilenet_model_params,
     "nTargetFrames" : 40,
-    "nFeatureLength" : inception_model_params["output_shape"][0],
+    "nFeatureLength" : mobilenet_model_params["output_shape"][0],
     "latent_dim" : 256,
-    "saved_model_path" : inception_model_params["saved_model_path"]
+    "saved_model_path" : mobilenet_model_params["saved_model_path"]
 }
 
 # videos_path = "dataset"
