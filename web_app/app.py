@@ -14,7 +14,7 @@ from model_lib.encoder_decoder import lstm_models
 from model_lib.videocapture import predict_from_camera
 from model_lib.camera import VideoCamera
 
-from flask_cors import CORS
+# from flask_cors import CORS
 from flask import Flask, jsonify, make_response, Response, request, render_template, redirect, url_for
 
 
