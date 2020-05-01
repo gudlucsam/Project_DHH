@@ -22,7 +22,7 @@ mobilenet_model_params = {
 
 # default model to load
 params = {
-    "labels_path" : '\\'.join([base_dir, "data_collection\\dataset_labels.csv"]),
+    "labels_path" : '\\'.join([base_dir, "dataset_labels.csv"]),
     "cnn_model_params" : mobilenet_model_params,
     "nTargetFrames" : 40,
     "nFeatureLength" : mobilenet_model_params["output_shape"][0],
