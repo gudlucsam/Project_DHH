@@ -183,7 +183,7 @@ class lstm_models():
       # train lstm model
       print("Training model....")
       model.fit([encoder_input_data, self.decoder_input_data], self.decoder_target_data,
-                  batch_size=5, epochs=100, validation_split=0.2)
+                  batch_size=5, epochs=70, validation_split=0.3)
       # model.fit([encoder_input_data, self.decoder_input_data], self.decoder_target_data,
       #             batch_size=5, epochs=200, validation_split=0.2,
       #             callbacks=[reduce_lr, early_stopping])
