@@ -154,7 +154,7 @@ class lstm_models():
     return decoded_sentence 
 
   def train(self, videos_path, nResizeMinDim):
-    if not os.path.exists(self.saved_model_path): # reverse logic
+    if os.path.exists(self.saved_model_path): # reverse logic
       print("Model already trained and saved to", self.saved_model_path)
       print("Training stopping...")
 
