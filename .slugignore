@@ -1,0 +1,5 @@
+model_lib/data_collection/
+model_lib/downloaded/
+mobilenet/
+api/
+angular-frontend/
