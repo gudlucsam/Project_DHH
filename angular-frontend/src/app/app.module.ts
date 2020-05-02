@@ -16,6 +16,7 @@ const routes: Routes = [
     AppComponent
   ],
   imports: [
+    WebcamModule,
     HttpClientModule,
     NgbModule,
     BrowserModule,

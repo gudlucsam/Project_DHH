@@ -18,30 +18,12 @@ export class SettingsComponent implements OnInit {
 
   ngOnInit(): void { }
 
-  // startStreaming() {
-  //   this.apiService.startVideoStreaming().subscribe(
-  //     data => {
-  //       // console.log(data.)
-  //       // this.image = data;
-  //       let objectURL = 'data:image/jpeg;base64,' + data;
-  //       this.image = this.sanitizer.bypassSecurityTrustUrl(objectURL);
-  //       console.log("ddddddddddddddddddddddddddd: ", this.image)
-  //     },
-  //     error => {
-  //       console.log("errffffffffffffffffffffor: ", error)
-  //     }
-  //   )
-  // }
+  startStreaming() {
+    // this.apiService.startVideoStreaming().subscribe()
+  }
 
-  // stopStreaming() {
-  //   this.apiService.stopVideoStreaming().subscribe(
-  //     data => {
-  //       console.log("data: ", data)
-  //     },
-  //     error => {
-  //       console.log("error: ", error)
-  //     }
-  //   )
-  // }
+  stopStreaming() {
+    // this.apiService.stopVideoStreaming().subscribe()
+  }
 
 }

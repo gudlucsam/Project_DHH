@@ -5,6 +5,8 @@ import { MainComponent } from './main.component';
 import { StreamVideoComponent } from './stream-video/stream-video.component';
 import { SettingsComponent } from './settings/settings.component';
 
+import { WebcamModule } from 'ngx-webcam';
+
 import { ApiService } from '../api.service';
 
 
@@ -18,6 +20,7 @@ const routes: Routes = [
     StreamVideoComponent,
     SettingsComponent],
   imports: [
+    WebcamModule,
     CommonModule,
     RouterModule.forChild(routes)
   ],

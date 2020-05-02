@@ -18,16 +18,16 @@ export class ApiService {
   }
 
   startVideoStreaming(){
-    const headers = new HttpHeaders({
-      'Content-Type': 'multipart/x-mixed-replace'
-    })
-    const body = JSON.stringify({'status': true});
-    return this.httpClient.post(`${this.baseUrl}md/vf`, body, {headers: headers});
+    // const headers = new HttpHeaders({
+    //   'Content-Type': 'multipart/x-mixed-replace'
+    // })
+    // const body = JSON.stringify({'status': true});
+    // return this.httpClient.post(`${this.baseUrl}md/vf`, body, {headers: headers});
   }
 
   stopVideoStreaming(){
-    const body = JSON.stringify({'status': false});
-    return this.httpClient.post(`${this.baseUrl}md/vf`, body, {headers: this.headers});
+    // const body = JSON.stringify({'status': false});
+    // return this.httpClient.post(`${this.baseUrl}md/vf`, body, {headers: this.headers});
   }
 
 }
