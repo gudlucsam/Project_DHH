@@ -5,6 +5,7 @@ import { MainModule } from './main/main.module'
 import { AppComponent } from './app.component';
 import {NgbModule} from '@ng-bootstrap/ng-bootstrap';
 import { HttpClientModule } from '@angular/common/http';
+import { WebcamModule } from 'ngx-webcam'
 
 const routes: Routes = [
   {path: '', pathMatch: 'full', redirectTo: 'dhh-app'}
