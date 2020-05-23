@@ -2,8 +2,15 @@
 
 ## Table of contents
 * [Project Description](#project-description)
-* [Technologies](#technologies)
-* [Setup](#setup)
+* [Getting Started](#getting-started)
+* [prerequisites](#prerequisites)
+* [Installing](#installing)
+* [Deployment](#deployment)
+* [Built With](#built-with)
+* [Contributing](#contributing)
+* [Versioning](#versioning)
+* [Author(s)](#Author(s))
+* [Acknowledgments](#acknowledgments)
 
 ## Project Description
 This project implements an automatic sign language translation model to help people without hearing impairment to communicate better with the Deaf and Hard of Hearing (DHH) individuals. The model employs a 3D Recurrent Convolutional Neural network (3DRCNN) architecture to continously translates sign language communication to its equivalent English sentence. 
@@ -12,7 +19,6 @@ This project implements the following:
 2. a data generation pipeline to generate dataset using youtube sign language videos and their transcriptions.
 3. a webservice api to expose the predictive functionalities of the translation model.
 4. a web application to consume the web service.
-
 
 ## Getting Started
 
@@ -50,12 +56,12 @@ This will open the web application where a user can record and translate sign la
 
 ## Deployment
 
-Add additional notes about how to deploy this on a live system
+As far as deploying to a live server is concern, this project is not fully commplete. With the web application, the video streaming component was not implemented on the client-side, and therefore has to be moved to the client-side for live deployment. However, the client side streaming been implemented using angular to consume the webservice is incomplete since there was defficulties implementing a continous video streaming on the client-side using any popular client-side library.
 
 ## Built With
 
-* [Dropwizard](http://www.dropwizard.io/1.0.2/docs/) - The web framework used
-* [Maven](https://maven.apache.org/) - Dependency Management
+* [Keras](http://www.dropwizard.io/1.0.2/docs/) - Used for neural network implementation.
+* [Maven](https://maven.apache.org/) - for
 * [ROME](https://rometools.github.io/rome/) - Used to generate RSS Feeds
 
 ## Contributing
@@ -66,11 +72,9 @@ Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c6
 
 We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags). 
 
-## Authors
+## Author(s)
 
-* **Billie Thompson** - *Initial work* - [PurpleBooth](https://github.com/PurpleBooth)
-
-See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
+* **Samuel Atule** - *Initial work* - [PurpleBooth](https://github.com/PurpleBooth)
 
 ## License
 
@@ -78,6 +82,5 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 
 ## Acknowledgments
 
-* Hat tip to anyone whose code was used
-* Inspiration
-* etc
+* Capstone Supervisor
+* Ashesi CS Department
