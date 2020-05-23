@@ -1,4 +1,5 @@
 import { BrowserModule } from '@angular/platform-browser';
+import { FormsModule } from '@angular/forms';
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 import { MainModule } from './main/main.module'
@@ -17,6 +18,7 @@ const routes: Routes = [
   ],
   imports: [
     WebcamModule,
+    FormsModule,
     HttpClientModule,
     NgbModule,
     BrowserModule,
