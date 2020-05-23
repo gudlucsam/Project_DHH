@@ -22,7 +22,7 @@ This project implements the following:
 3. a webservice api to expose the predictive functionalities of the translation model.
 4. a web application to consume the web service.
 
-**This project was carried out in fulfilling of a CS undergraduate degree program at Ahesi University.**
+**This project was carried out in fulfilling of a CS undergraduate degree program at [Ashesi University](https://www.ashesi.edu.gh/)**
 
 ## System Components
 ![Screenshot](component.PNG)
