@@ -2,6 +2,8 @@
 
 ## Table of contents
 * [Project Description](#project-description)
+* [System Components](#system-components)
+* [Neural Network Model Architecture](#neural-network-model-architecture)
 * [Getting Started](#getting-started)
 * [prerequisites](#prerequisites)
 * [Installing](#installing)
@@ -19,6 +21,14 @@ This project implements the following:
 2. a data generation pipeline to generate dataset using youtube sign language videos and their transcriptions.
 3. a webservice api to expose the predictive functionalities of the translation model.
 4. a web application to consume the web service.
+
+**This project was carried out in fulfilling of a CS undergraduate degree program at Ahesi University.**
+
+## System Components
+![Screenshot](component.PNG)
+
+## Neural Network Model Architecture
+![Screenshot](en-de.PNG)
 
 ## Getting Started
 
@@ -57,6 +67,7 @@ This will open the web application where a user can record and translate sign la
 ## Deployment
 
 As far as deploying to a live server is concern, this project is not fully commplete. With the web application, the video streaming component was not implemented on the client-side, and therefore has to be moved to the client-side for live deployment. However, the client side streaming been implemented using angular to consume the webservice is incomplete since there was defficulties implementing a continous video streaming on the client-side using any popular client-side library.
+
 
 ## Built With
 
