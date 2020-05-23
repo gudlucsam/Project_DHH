@@ -46,7 +46,7 @@ And then simply run these commands to start the local flask server
 >>python app.py
 ```
 This will open the web application where a user can record and translate sign language communication.
-![Screenshot](screenshot.png)
+![Screenshot](screenshot.PNG)
 
 ## Deployment
 
