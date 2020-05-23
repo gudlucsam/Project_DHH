@@ -11,57 +11,42 @@ This project implements the following:
 1. a neural network model for translation.
 2. a data generation pipeline to generate dataset using youtube sign language videos and their transcriptions.
 3. a webservice api to expose the predictive functionalities of the translation model.
-4. a web application to consume the web service 
+4. a web application to consume the web service.
+
 
 ## Getting Started
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
+These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project locally.
 
 ### Prerequisites
 
-What things you need to install the software and how to install them
+The packages needed to recreate the environment to run this project are in the requirements.txt.
 
 ```
-Give examples
+Flask==1.1.1
+h5py==2.10.0
+Keras==2.3.1
+opencv-python==3.3.0.9
+pandas==0.24.2
+tensorflow-cpu==1.15.0
 ```
 
 ### Installing
 
-A step by step series of examples that tell you how to get a development env running
+Create a virtual env, and run the following commands to get web application up and runnning
 
-Say what the step will be
-
+run this command to install all packages:
 ```
-Give the example
-```
-
-And repeat
-
-```
-until finished
+>> pip install -r requirements.txt
 ```
 
-End with an example of getting some data out of the system or using it for a little demo
-
-## Running the tests
-
-Explain how to run the automated tests for this system
-
-### Break down into end to end tests
-
-Explain what these tests test and why
-
+And then simply run these commands to start the local flask server
 ```
-Give an example
+>>cd web_app
+>>python app.py
 ```
-
-### And coding style tests
-
-Explain what these tests test and why
-
-```
-Give an example
-```
+This will open the web application where a user can record and translate sign language communication.
+![Screenshot](screenshot.png)
 
 ## Deployment
 
