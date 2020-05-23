@@ -60,9 +60,11 @@ As far as deploying to a live server is concern, this project is not fully commp
 
 ## Built With
 
-* [Keras](http://www.dropwizard.io/1.0.2/docs/) - Used for neural network implementation.
-* [Maven](https://maven.apache.org/) - for
-* [ROME](https://rometools.github.io/rome/) - Used to generate RSS Feeds
+* [Keras](https://keras.io/) - Used for neural network implementation.
+* [OpenCV-Python](https://pypi.org/project/opencv-python/) - for video manupulation
+* [Moviepy](https://pypi.org/project/moviepy/) - for video trimming during data generation
+* [Youtube API](https://pypi.org/project/python-youtube/) - for downloading videos duing data generation
+* etc
 
 ## Contributing
 
@@ -74,7 +76,7 @@ We use [SemVer](http://semver.org/) for versioning. For the versions available, 
 
 ## Author(s)
 
-* **Samuel Atule** - *Initial work* - [PurpleBooth](https://github.com/PurpleBooth)
+* **Samuel Atule** - *Machine Learning and Software Engineer* - [Gudlucsam](https://github.com/gudlucsam)
 
 ## License
 
